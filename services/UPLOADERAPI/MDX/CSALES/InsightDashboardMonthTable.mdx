@@ -1,0 +1,140 @@
+﻿with 
+
+member [Measures].[Current BS Day Month] as
+	[Date Commissioned].[Calendar Time].Properties("US Work Day")
+	
+member [Measures].[Total BS Days in Month] as
+	([Date Commissioned].[Calendar Time].CurrentMember.LastSibling).Properties("US Work Day")	
+
+member [Measures].[Prior Month Open USD] as
+	([Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Order Reversals USD])
+		//(([Measures].[Prior Month Open Orders USD], [Commissionable Flag].[Commissionable].&[Yes]) * -1)
+		/*(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Month],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent)
+			, [Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+		)	* -1	
+		*/
+
+member [Measures].[Prior Month Open TC] as
+		([Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Order Reversals USD])	
+		/*(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Month],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent)
+			, [Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+		)	* -1	
+		*/
+
+member [Measures].[Prior Day Sales USD] as
+   ( 
+	STRTOMEMBER(@DateKey) ,[Measures].[Commissioned Sales USD]
+   )	
+member [Measures].[Prior Day Sales TC] as
+   ( 
+	STRTOMEMBER(@DateKey) ,[Measures].[Commissioned Sales TC]
+   )	
+   
+member [Measures].[Month Net Open Orders TC] as
+   ( 
+	([Measures].[Month Net Open Orders TC], [Commissionable Flag].[Commissionable].&[Yes])	
+   )  
+   
+member [Measures].[Month Net Open Orders USD] as
+   ( 
+	([Measures].[Month Net Open Orders USD], [Commissionable Flag].[Commissionable].&[Yes])		
+   )   
+   
+member [Measures].[Open Order Line Amount TC] as
+   ( 
+	//([Measures].[Order Line Amount TC], [Commissionable Flag].[Commissionable].&[Yes]) 	
+	 [Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Orders USD]
+   )       
+   
+member [Measures].[Open Order Line Amount USD] as
+   ( 
+	//([Measures].[Order Line Amount USD], [Commissionable Flag].[Commissionable].&[Yes]) 	
+	[Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Orders USD]
+		
+   )    
+   
+
+member [Measures].[Full Month PTQ] as
+   ( 
+	//([Measures].[MTD Commissioned Sales TC] + [Measures].[Open Order Line Amount TC] + [Measures].[Prior Month Open TC]) / [Measures].[Full Month Quota TC] 	
+	([Measures].[MTD Commissioned Sales TC]) / [Measures].[Full Month Quota TC] 
+   )        
+   
+/*member [Measures].[x] as
+   ( 
+	([Measures].[MTD PTQ], [Commissionable Flag].[Commissionable].&[Yes])	
+   )      
+*/
+member [Measures].[MTD Commissioned Sales TC] as
+   ( 
+	([Measures].[MTD Direct Sales TC] + [Measures].[MTD Trace Sales TC] + [Measures].[Open Order Line Amount TC] + [Measures].[Prior Month Open TC])
+   )      
+   
+member [Measures].[MTD Commissioned Sales USD] as
+   ( 
+	([Measures].[MTD Direct Sales USD] + [Measures].[MTD Trace Sales USD] + [Measures].[Open Order Line Amount USD] + [Measures].[Prior Month Open USD])
+   )   
+   
+member [Measures].[MTD Commissioned Sales USD Past] as
+   ( 
+	([Measures].[MTD Direct Sales USD] + [Measures].[MTD Trace Sales USD] + [Measures].[Past OO Amt] + [Measures].[Prior Month Open USD])
+   )    
+   
+member [Measures].[MTD Commissioned Sales TC Past] as
+   ( 
+	([Measures].[MTD Direct Sales TC] + [Measures].[MTD Trace Sales TC] + [Measures].[Past OO Amt] + [Measures].[Prior Month Open USD])
+   )         
+   
+	member [Measures].[Current Month OO Past] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Month],0, [Date Commissioned].[Calendar Time].CurrentMember.Parent)
+			, [Measures].[ME Order Amount]
+		)	
+		
+	member [Measures].[Prior Month OO Past] as
+			(
+			[Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+		)	           
+           
+	MEMBER [Measures].[Past OO Amt] AS
+	([Measures].[Prior Month OO Past] - [Measures].[Current Month OO Past]) * -1   
+
+	member [Measures].[MTD PTQ] as
+		([Measures].[MTD Commissioned Sales TC] / [Measures].[MTD Quota TC])
+
+SELECT 
+{
+	[Measures].[MTD Commissioned Sales USD Past],
+	[Measures].[MTD Commissioned Sales TC Past],
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales USD],
+	[Measures].[MTD Direct Sales TC],
+	[Measures].[MTD Direct Sales USD],
+	[Measures].[MTD Trace Sales TC],
+	[Measures].[MTD Trace Sales USD],
+	[Measures].[Current BS Day Month],
+    [Measures].[Total BS Days in Month],
+	[Measures].[Full Month Quota TC],
+	//[Measures].[Prior Day Commisssioned Sales TC],
+	[Measures].[Prior Day Sales USD],
+	//[Measures].[Prior Day Commisssioned Sales USD],
+	[Measures].[Prior Day Sales TC],
+	[Measures].[MTD PTQ],
+	[Measures].[Full Month PTQ],
+	[Measures].[Prior Month Open TC],
+	[Measures].[Prior Month Open USD],
+	[Measures].[Open Order Line Amount TC],
+	[Measures].[Open Order Line Amount USD],
+	[Measures].[Month Net Open Orders TC],
+	[Measures].[Month Net Open Orders USD],
+	[Measures].[Trace Estimate USD],
+	[Measures].[Trace Estimate LC]		
+} ON COLUMNS
+FROM SalesOrders
+WHERE 
+(
+STRTOMEMBER(@SalesGeoMemberKey),
+STRTOMEMBER(@DateKey)
+)

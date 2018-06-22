@@ -1,0 +1,43 @@
+﻿WITH
+MEMBER
+	[PY Commissioned Sales USD] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Commissioned Sales USD]), FORMAT_STRING = "Currency"		
+MEMBER
+	[PY Commissioned Sales TC] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Commissioned Sales TC]), FORMAT_STRING = "Currency"				
+MEMBER 
+	[PY Quantity Invoiced] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Quantity Invoiced])		
+SELECT
+{
+
+	[Measures].[Commissioned Sales TC],
+	[Measures].[Commissioned Sales USD],
+	[PY Commissioned Sales TC],
+	[PY Commissioned Sales USD],		
+	[Measures].[YTD Commissioned Sales USD],
+	[Measures].[YTD Commissioned Sales TC],
+	[Measures].[PYTD Commissioned Sales TC],
+	[Measures].[PYTD Commissioned Sales USD],		
+	[Measures].[Quantity Invoiced],
+	[PY Quantity Invoiced]
+} ON COLUMNS,
+//NON EMPTY
+{
+	//([Ship To Customer Location].[Account Name].[All].Children) *
+	NonEmpty(STRTOMEMBER(@CustomerMemberKey).Children, [Ship To Customer Location].[Account Number].Children) *
+	[Ship To Customer Location].[Account Number].[Account Number] *
+	//STRTOMEMBER(@DateKey).PrevMember : STRTOMEMBER(@DateKey).Lag(12)
+	STRTOMEMBER(@DateKey).Parent : STRTOMEMBER(@DateKey).Parent.Lag(@TrailingPeriodCount)
+} 
+DIMENSION PROPERTIES 
+MEMBER_UNIQUE_NAME,
+MEMBER_CAPTION
+ON ROWS
+FROM SalesOrders
+where(
+	STRTOMEMBER(@ProductKey),
+	STRTOMEMBER(@SalesGeoMemberKey),
+	STRTOMEMBER(@CapitalDisposableKey),	
+	STRTOMEMBER(@DistributorKey)
+)

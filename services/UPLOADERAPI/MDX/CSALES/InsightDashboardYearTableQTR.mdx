@@ -1,0 +1,43 @@
+﻿WITH
+	member [Measures].[Prior Month OO] as
+			(
+			[Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+		)	
+		
+	member [Measures].[Current Month OO] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Quarter],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent)
+			, [Measures].[ME Order Amount]
+		)		 		     
+             
+	member NetOpen as
+		([Measures].[Prior Month OO] - [Measures].[Current Month OO])
+	
+	member OpenOrderAmt as
+		([Measures].[Order Line Amount TC] + NetOpen)
+		
+	member [QTD Comm Sales] as
+		[Measures].[QTD Commissioned Sales TC] + OpenOrderAmt
+		
+	member [QTD PTQ] as
+		IIF(isEmpty([Measures].[QTD Quota TC]), 0,
+			[QTD Comm Sales] / [Measures].[QTD Quota TC]
+		)	
+		
+	member [QTD +/- To Quota] as
+		[QTD Comm Sales] - [Measures].[QTD Quota TC]			
+             
+SELECT {
+	[QTD Comm Sales],
+	[Measures].[QTD Quota TC],
+	[QTD PTQ],
+	[QTD +/- To Quota]//,
+
+} ON 0
+	from SalesOrders
+WHERE (
+STRTOMEMBER(@SalesGeoMemberKey),
+STRTOMEMBER(@DateKey)
+//[Sales Geography].[Sales Geography].[Geography ID].&[768],
+//[Date Commissioned].[Calendar Time].[06/16/2016]
+)

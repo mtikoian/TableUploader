@@ -1,0 +1,24 @@
+﻿WITH 
+	MEMBER [Measures].[Product Division] AS [Product].[Conmed Item Hierarchy].CurrentMember.Parent.Parent.Parent.Parent.Name
+	MEMBER [Measures].[Product Major] AS [Product].[Conmed Item Hierarchy].CurrentMember.Parent.Parent.Parent.Name
+	MEMBER [Measures].[Product Minor] AS [Product].[Conmed Item Hierarchy].CurrentMember.Parent.Parent.Name
+	MEMBER [Measures].[Product Line] AS [Product].[Conmed Item Hierarchy].CurrentMember.Parent.Name
+	MEMBER [Measures].[Product Group] AS [Product].[Conmed Item Hierarchy].CurrentMember.Name
+	MEMBER [Measures].[HasSales] AS [Measures].[Commissioned Sales USD]
+
+SELECT 
+{
+	[Measures].[Product Division], 
+	[Measures].[Product Major], 
+	[Measures].[Product Minor], 
+	[Measures].[Product Line], 
+	[Measures].[Product Group]
+} 
+ON COLUMNS, 
+{ 
+	NonEmpty(DESCENDANTS([Product].[Conmed Item Hierarchy], [Product].[Conmed Item Hierarchy].[C Item Group]), [HasSales]) 
+} ON ROWS 
+FROM [SalesOrders]
+where(
+	STRTOMEMBER(@SalesGeoMemberKey) //[Sales Geography].[Sales Geography].[Area].&[C200]
+)

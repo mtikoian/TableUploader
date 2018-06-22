@@ -1,0 +1,123 @@
+﻿WITH
+	MEMBER [Measures].[Open Capital TC] AS
+	([Measures].[Net Open Orders TC], [Product].[US Comm Capital or Disposable].&[CAPITAL],[Commissionable Flag].[Commissionable].&[Yes]) 
+      
+	MEMBER [Measures].[Open Disposable TC] AS
+	([Measures].[Net Open Orders TC], [Product].[US Comm Capital or Disposable].&[DISPOSABLE] ,[Commissionable Flag].[Commissionable].&[Yes])    
+      
+	MEMBER [Measures].[Open Unassigned TC] AS
+	([Measures].[Net Open Orders TC], [Product].[US Comm Capital or Disposable].&[Unassigned],[Commissionable Flag].[Commissionable].&[Yes])             
+      
+	MEMBER [Measures].[Month Disposable Sales TC] AS
+	([Measures].[MTD Disposable Sales TC],[Commissionable Flag].[Commissionable].&[Yes] ) +
+	([Measures].[MTD C-D Unassigned Sales TC],[Commissionable Flag].[Commissionable].&[Yes]) + [Measures].[Prior Month OO Disp] - [Measures].[Current Month OO Disp] //+
+	//([Measures].[Open Disposable TC]) +
+	//([Measures].[Open Unassigned TC])
+     
+	MEMBER [Measures].[Month Capital Sales TC] AS
+	([Measures].[MTD Commissioned Sales TC], [Product].[US Comm Capital or Disposable].&[CAPITAL]) + [Measures].[Prior Month OO Cap] - [Measures].[Current Month OO Cap]//+
+	//([Measures].[Open Capital TC] )
+       
+	MEMBER [Measures].[Month Disposable Sales USD] AS
+	([Measures].[MTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[DISPOSABLE]) +
+	([Measures].[MTD C-D Unassigned Sales USD] ) + [Measures].[Prior Month OO Disp] - [Measures].[Current Month OO Disp] // +
+	//([Measures].[Open Disposable TC] ) +
+	//([Measures].[Open Unassigned TC])
+      
+	MEMBER [Measures].[Month Capital Sales USD] AS
+	([Measures].[MTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[CAPITAL]) + [Measures].[Prior Month OO Cap] - [Measures].[Current Month OO Cap]  //+
+	//([Measures].[Open Capital TC] )
+      
+	member [Measures].[Current Month Net TC] as
+	[Measures].[Order Line Amount TC] +  ([Measures].[Month Net Open Orders TC]) + [Measures].[Commissioned Sales TC]  
+	
+	member [Measures].[Current Month Net USD] as
+	[Measures].[Order Line Amount USD] +  ([Measures].[Month Net Open Orders USD]) + [Measures].[Commissioned Sales USD]  	
+	
+	member [Measures].[Disposable TC] as
+	([Measures].[Current Month Net TC], [Product].[US Comm Capital or Disposable].&[DISPOSABLE], [Commissionable Flag].[Commissionable].&[Yes])  
+	
+	member [Measures].[Unnassigend TC] as
+	([Measures].[Current Month Net TC], [Product].[US Comm Capital or Disposable].&[Unassigned], [Commissionable Flag].[Commissionable].&[Yes])  
+	
+	member [Measures].[Disposable USD] as
+	([Measures].[Current Month Net USD], [Product].[US Comm Capital or Disposable].&[DISPOSABLE], [Commissionable Flag].[Commissionable].&[Yes])  
+	
+	member [Measures].[Unnassigend USD] as
+	([Measures].[Current Month Net USD], [Product].[US Comm Capital or Disposable].&[Unassigned], [Commissionable Flag].[Commissionable].&[Yes])  	
+	
+	member [Measures].[Current Month Total Disp TC] as
+	([Measures].[Disposable TC] + [Measures].[Unnassigend TC]) - [Measures].[Current Month OO Disp]	
+	
+	member [Measures].[Current Month Total Cap TC] as
+	([Measures].[Current Month Net TC], [Product].[US Comm Capital or Disposable].&[CAPITAL],[Commissionable Flag].[Commissionable].&[Yes]) - [Measures].[Current Month OO Cap] 
+	
+	member [Measures].[Current Month Total Disp USD] as
+	([Measures].[Disposable USD] + [Measures].[Unnassigend USD]) - [Measures].[Current Month OO Disp]	
+	
+	member [Measures].[Current Month Total Cap USD] as
+	([Measures].[Current Month Net USD], [Product].[US Comm Capital or Disposable].&[CAPITAL],[Commissionable Flag].[Commissionable].&[Yes]) - [Measures].[Current Month OO Cap] 	
+	
+	member [Measures].[Current Month PTQ] as
+	([Measures].[Current Month Net TC],[Commissionable Flag].[Commissionable].&[Yes]) / [Measures].[Full Month Quota TC] 	
+	
+	member [Measures].[Prior Month OO] as
+			(
+			[Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+		)	
+		
+	member [Measures].[Prior Month OO Cap] as
+			(
+			[Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes], [Product].[US Comm Capital or Disposable].&[CAPITAL]
+		)	
+		
+	member [Measures].[Prior Month OO Disp] as
+			[Measures].[Prior Month OO] - iif(isempty([Measures].[Prior Month OO Cap]),0, [Measures].[Prior Month OO Cap])			
+		
+	member [Measures].[Current Month OO] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Month],1, [Date Commissioned].[Calendar Time].CurrentMember)
+			, [Measures].[ME Order Amount]
+		)			 	
+		 	
+	member [Measures].[Current Month OO Cap] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Month],1, [Date Commissioned].[Calendar Time].CurrentMember)
+			, [Measures].[ME Order Amount], [Product].[US Comm Capital or Disposable].&[CAPITAL]
+		)	
+		
+	member [Measures].[Current Month OO Disp] as
+			[Measures].[Current Month OO] - iif(isempty([Measures].[Current Month OO Cap]),0, [Measures].[Current Month OO Cap])						 		     
+             
+SELECT {
+	[Measures].[Month Disposable Sales TC],
+	[Measures].[Month Disposable Sales USD],
+	[Measures].[Month Capital Sales TC],
+	[Measures].[Month Capital Sales USD],
+	[Measures].[Full Month Quota TC],
+	[Measures].[Full Month PTQ]	,
+    [Measures].[Current Month Net TC],
+	[Measures].[Current Month Total Disp TC],
+	[Measures].[Current Month Total Cap TC],
+	[Measures].[Current Month Total Disp USD],
+	[Measures].[Current Month Total Cap USD],
+	[Measures].[Current Month PTQ],
+	[Measures].[Prior Month OO],
+	[Measures].[Prior Month OO Cap],
+	[Measures].[Prior Month OO Disp],
+	[Measures].[Current Month OO Cap],
+	[Measures].[Current Month OO Disp]
+} ON 0,
+{
+TopCount(	
+	DESCENDANTS(
+	STRTOMEMBER(@DateKey), 
+	[Date Commissioned].[Calendar Time].[Month]
+	), @TrailingPeriodCount
+
+)
+} on 1
+	from SalesOrders
+WHERE (
+	STRTOMEMBER(@SalesGeoMemberKey)
+)

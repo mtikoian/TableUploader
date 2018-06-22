@@ -1,0 +1,47 @@
+<link href="assets/css/signin.css" rel="stylesheet" type="text/css">
+
+<div ng-controller="LoginCtrl">
+	<form name="loginFrom" ng-submit="login()" role="form" class="form-signin">
+		<!--<img src="assets/img/ConMed_Logo.png" class="form-signin-logo img-responsive" alt="ConMed Logo"  />
+		<img src="assets/img/LoginHeader.png" class="form-signin-heading img-responsive" alt="Login Header" />-->
+		<img src="assets/img/ConMed_Logo.png" class="form-signin-logo img-responsive" alt="Conmed Logo" />
+		<!--<form name="loginFrom" ng-submit="login()" role="form">-->
+			<div class="form-group" ng-class="{ 'has-error': form.username.$dirty && form.username.$error.required}">
+				<label for="username" class="sr-only">Username</label>
+				<input type="text" name="username" id="username" class="form-control" placeholder="Username" ng-model="username" autofocus>
+				<span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">Username is required</span>
+			</div>
+			<div class="form-group" ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
+				<label for="password" class="sr-only">Password</label>
+				<input type="password" name="password" id="password" class="form-control" ng-model="password" placeholder="Password" style="margin-bottom:5px">
+				<span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
+			</div>
+			
+			<div style="height:20px; margin-bottom:5px">{{error}}</div>
+			
+			<div class="form-actions">
+				<button id="btnLogin" class="btn btn-lg btn-block btn-conmed" type="submit" ng-disabled="form.$invalid || dataLoading">Login</button>
+				<img ng-if="dataLoading" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" >
+				<br>
+				<a href="mailto:LargoHelpDesk@conmed.com?subject=Quota Help" class="help-link">Need Help?</a>
+			</div>			
+			
+	</form>
+	<div style="max-width: 600px; margin: 50px auto;">
+		<div>
+				<p style="color: black; text-align: center;">
+					The web site is intended only for authorized users and may contain confidential and/or privileged material. 
+					Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon, this 
+					information by persons or entities other than the intended recipient is not authorized and may be unlawful.
+				</p>
+			</div>
+		<!--</form>-->
+		
+		<div id="footer">
+			<img src="assets/img/ConMed_Logo.png" class="img-responsive" alt="ConMed Logo" style="width: 225px; margin: 10px auto;"  />
+			Copyright &copy; 2018 ConMed Corporation, Inc.
+		</div>
+	</div>
+				
+
+</div>

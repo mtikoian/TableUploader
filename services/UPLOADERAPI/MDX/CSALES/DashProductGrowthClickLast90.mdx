@@ -1,0 +1,33 @@
+﻿WITH
+MEMBER [Measures].[HasSales] AS 
+	[Measures].[Last 90 Days Commissioned Sales USD] + [Measures].[PLast 90 Days Commissioned Sales USD]    
+MEMBER [Measures].[Parent Level] as
+ ([Product].[Conmed Item Hierarchy].CurrentMember.Parent.Name)
+MEMBER [Measures].[Child Level] as
+ ([Product].[Conmed Item Hierarchy].CurrentMember.Name) 
+SELECT
+{	
+	[Measures].[Parent Level],
+	[Measures].[Child Level],
+	[Measures].[Last 90 Days Commissioned Sales Growth %],	
+	[Measures].[Last 90 Days Commissioned Sales Growth % USD],	
+	[Measures].[Last 90 Days Commissioned Sales USD],	
+	[Measures].[Last 90 Days Commissioned Sales TC],
+	[Measures].[PLast 90 Days Commissioned Sales TC],
+	[Measures].[PLast 90 Days Commissioned Sales USD]
+} ON COLUMNS,
+NON EMPTY
+{
+    NonEmpty(
+		([Ship To Customer Location].[Account Name].[All].Children, [Ship To Customer Location].[Account Number].[All].Children)*	
+		STRTOMEMBER(@ProductKey),//[Product].[Conmed Item Hierarchy].[C Item Division].&[ADVANCED SURGICAL].&[ADVANCED ENERGY],		
+		[Measures].[HasSales]
+		)
+} 
+ON ROWS
+FROM [SalesOrders]
+WHERE (
+	STRTOMEMBER(@SalesGeoMemberKey),
+	STRTOMEMBER(@CapitalDisposableKey),
+	STRTOMEMBER(@DateKey) //[Date Commissioned].[Calendar Time].[05/04/2016]
+)

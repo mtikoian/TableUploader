@@ -1,0 +1,46 @@
+﻿WITH 
+MEMBER [Measures].[Prior Month Commissioned Sales TC] AS
+	([Date Commissioned].[Calendar Time].[Feb 2016].PrevMember, [Measures].[MTD Commissioned Sales TC])
+MEMBER [Measures].[Prior Month Commissioned Sales Growth %] AS
+	([Date Commissioned].[Calendar Time].[Feb 2016].PrevMember, [Measures].[MTD Commissioned Sales Growth %])
+
+MEMBER [Measures].[Prior Month Capital Commissioned Sales TC] AS
+	([Date Commissioned].[Calendar Time].[Feb 2016].PrevMember, 
+	 [Product].[US Comm Capital or Disposable].&[CAPITAL],
+	 [Measures].[MTD Commissioned Sales]
+	 )
+MEMBER [Measures].[Prior Month Capital Commissioned Sales Growth %] AS
+	([Date Commissioned].[Calendar Time].[Feb 2016].PrevMember, 
+	  [Product].[US Comm Capital or Disposable].&[CAPITAL],
+	  [Measures].[MTD Commissioned Sales Growth %]
+	  )
+MEMBER [Measures].[Prior Month Disposable Commissioned Sales TC] AS
+	([Date Commissioned].[Calendar Time].[Feb 2016].PrevMember, 
+	 [Product].[US Comm Capital or Disposable].&[DISPOSABLE],
+	 [Measures].[MTD Commissioned Sales TC]
+	 )
+MEMBER [Measures].[Prior Month Disposable Commissioned Sales Growth %] AS
+	([Date Commissioned].[Calendar Time].[Feb 2016].PrevMember, 
+	  [Product].[US Comm Capital or Disposable].&[DISPOSABLE],
+	  [Measures].[MTD Commissioned Sales Growth %]
+	  )
+SELECT
+{
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales Growth %],
+	[Measures].[Prior Month Commissioned Sales TC],
+	[Measures].[Prior Month Commissioned Sales Growth %],
+	[Measures].[Prior Month Capital Commissioned Sales TC],
+	[Measures].[Prior Month Capital Commissioned Sales Growth %],
+	[Measures].[Prior Month Disposable Commissioned Sales TC],
+	[Measures].[Prior Month Disposable Commissioned Sales Growth %]
+
+} ON 0
+FROM 
+	SalesOrders
+WHERE	
+(
+	STRTOMEMBER(@CustomerKey),
+	STRTOMEMBER(@SalesGeoMemberKey),  
+	STRTOMEMBER(@DateKey)
+)

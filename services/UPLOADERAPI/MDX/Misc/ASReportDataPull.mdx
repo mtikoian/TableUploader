@@ -1,0 +1,4 @@
+﻿ SELECT NON EMPTY { [Measures].[Commissioned Sales FC] } 
+ ON COLUMNS 
+ FROM [SalesOrders] 
+ WHERE strtomember(@GEOGID)

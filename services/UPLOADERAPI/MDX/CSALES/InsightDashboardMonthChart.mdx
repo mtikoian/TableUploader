@@ -1,0 +1,19 @@
+﻿SELECT 
+{
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales USD],
+	[Measures].[MTD Direct Sales TC],
+	[Measures].[MTD Direct Sales USD],
+	[Measures].[MTD Trace Sales TC],
+	[Measures].[MTD Trace Sales USD],
+	[Measures].[Full Month Quota TC],
+	[Measures].[MTD Trace Estimate USD]
+} ON COLUMNS,
+{
+	STRTOMEMBER(@DateKey).Siblings
+} ON ROWS
+FROM 
+	[SalesOrders]
+WHERE (
+STRTOMEMBER(@SalesGeoMemberKey)
+)

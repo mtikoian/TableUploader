@@ -1,0 +1,23 @@
+﻿WITH 
+MEMBER [Measures].[MemberLevel] AS
+	[Sales Geography].[Sales Geography].CurrentMember.Level_Number
+MEMBER [Measures].[MemberKey] AS 
+	[Sales Geography].[Sales Geography].CurrentMember.UniqueName
+MEMBER [Measures].[ChildCount] AS 
+	COUNT([Sales Geography].[Sales Geography].CurrentMember.Children)
+MEMBER [Measures].[MemberName] AS 
+	[Sales Geography].[Sales Geography].CurrentMember.Name
+MEMBER [Measures].[ParentKey] AS 
+	[Sales Geography].[Sales Geography].CurrentMember.Parent.UniqueName  
+MEMBER [Measures].[ParentName] AS 
+	[Sales Geography].[Sales Geography].CurrentMember.Parent.Name
+SELECT { 
+	[Measures].[MemberLevel],
+	[Measures].[MemberKey], 
+	[Measures].[MemberName], 
+	[Measures].[ParentKey], 
+	[Measures].[ParentName], 
+	[Measures].[ChildCount]
+} ON 0
+FROM [$Sales Geography]
+WHERE (STRTOMEMBER(@SalesGeoMemberKey))

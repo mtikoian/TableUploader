@@ -1,0 +1,42 @@
+﻿with
+
+	MEMBER [Measures].[Account Number] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "Location Number" )	
+
+	MEMBER [Measures].[Address] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "AddressLine1" ) + " " + [Ship To Customer Location].[Location].CurrentMember.Properties( "AddressLine2" )
+
+	MEMBER [Measures].[City] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "CITY" )
+		
+	MEMBER [Measures].[State Province] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "State-Province" )	
+		
+	MEMBER [Measures].[Postal Code] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "Postal Code" )	
+		
+	MEMBER [Measures].[Full Display] as		
+		[Ship To Customer Location].[Location].CurrentMember.Name + " " + [Measures].[Account Number] + " " + [Measures].[Address] + " " + [Measures].[City] + " " + [Measures].[State Province] + " " + [Measures].[Postal Code]		
+			
+SELECT
+{	
+	[Measures].[Account Number],
+	[Measures].[Address],
+	[Measures].[City],
+	[Measures].[State Province],
+	[Measures].[Postal Code]//,
+	//[Measures].[Full Display]
+} ON 0,
+{
+	FILTER(NonEmpty([Ship To Customer Location].[Location].[Location].MEMBERS),
+			Instr([Measures].[Full Display].Value
+				, @SearchTerm) > 0
+				)
+			
+}
+ON 1
+FROM 
+	SalesOrders
+WHERE (
+	STRTOMEMBER(@SalesGeoMemberKey)	
+)

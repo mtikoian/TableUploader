@@ -1,0 +1,26 @@
+﻿WITH MEMBER 
+[MEASURES].[HierarchyLevel] AS 
+	[Product].[Conmed Marketing Hierarchy].LEVEL_NUMBER
+SELECT 
+{	
+	[MEASURES].[HierarchyLevel],
+	[Measures].[YTD Total Commissionable Sales Growth %]
+} ON COLUMNS,
+{
+	HIERARCHIZE(
+	UNION(
+		{
+			[Product].[Conmed Marketing Hierarchy].[Division].&[ADVANCED SURGICAL].&[ADVANCED ENERGY],
+			[Product].[Conmed Marketing Hierarchy].[Division].&[ADVANCED SURGICAL].&[ENDOMECHANICAL]
+		},
+		[Product].[Conmed Marketing Hierarchy].[Division].&[ADVANCED SURGICAL].&[ADVANCED ENERGY].Children,
+		[Product].[Conmed Marketing Hierarchy].[Division].&[ADVANCED SURGICAL].&[ENDOMECHANICAL].Children
+	))
+}
+ ON ROWS
+FROM SalesOrders
+WHERE 
+(
+[Date Commissioned].[Calendar Time].[02/22/2016],
+[Sales Geography].[Sales Geography].[District].&[E6530]
+)

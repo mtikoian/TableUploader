@@ -1,0 +1,16 @@
+﻿SELECT
+{
+	[Measures].[Quantity Invoiced]
+} ON COLUMNS,
+NON EMPTY
+{
+	distinct(
+		[Product].[Product Number].[All].Children,
+		[Product].[Product Number Desc].[All].Children
+	)
+}
+ON ROWS
+FROM SalesOrders
+WHERE (
+	STRTOMEMBER(@SalesGeoMemberKey)//[Sales Geography].[Sales Geography].[Area].&[C561]
+)

@@ -1,0 +1,50 @@
+﻿WITH
+	MEMBER [Measures].[Delta MTD] as
+		[Measures].[MTD Commissioned Sales TC] - [Measures].[PMTD Commissioned Sales TC] 
+		
+	MEMBER [Measures].[Delta QTD] as
+		[Measures].[QTD Commissioned Sales TC] - [Measures].[PQTD Commissioned Sales TC] 
+		
+	MEMBER [Measures].[Delta YTD] as
+		[Measures].[YTD Commissioned Sales TC] - [Measures].[PYTD Commissioned Sales TC] 				
+
+SELECT {
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales Growth %],
+	[Measures].[Delta MTD],
+	[Measures].[QTD Commissioned Sales TC],
+	[Measures].[QTD Commissioned Sales Growth %],
+	[Measures].[Delta QTD],
+	[Measures].[YTD Commissioned Sales TC],
+	[Measures].[YTD Commissioned Sales Growth %],
+	[Measures].[Delta YTD],
+	[Measures].[PMTD Commissioned Sales TC],
+	[Measures].[PQTD Commissioned Sales TC],
+	[Measures].[PYTD Commissioned Sales TC] 		
+
+} ON COLUMNS,
+{
+[Product].[Conmed Item Hierarchy].[C Item Division].&[ARTHRO POWER].&[ARTHROSCOPY POWER].&[POWER],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[ARTHRO POWER].&[ARTHROSCOPY POWER].&[FLUID SYSTEMS],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[POWER].&[LARGE BONE],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[POWER].&[SMALL BONE],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[POWER].&[SPECIALTY],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[POWER].&[POWER REPAIR],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[ENDOSCOPY].&[IMAGING REPAIRS],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[ARTHRO POWER].&[ARTHROSCOPY REPAIR],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[SPORTS MEDICINE].&[PROCEDURE SPECIFIC].&[SOFT TISSUE FIXATION],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[SPORTS MEDICINE].&[PROCEDURE SPECIFIC].&[KNEE RECONSTRUCTION],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[SPORTS MEDICINE].&[PROCEDURE SPECIFIC].&[AES],
+[Product].[Conmed Item Hierarchy].[C Item Division].&[ADVANCED SURGICAL].&[ENDOMECHANICAL].&[3D HD OTHER] ,
+[Product].[Conmed Item Hierarchy].[C Item Division].&[ADVANCED SURGICAL].&[ENDOMECHANICAL].&[3D HD REPAIRS] ,
+[Product].[Conmed Item Hierarchy].[C Item Division].&[ADVANCED SURGICAL].&[ENDOMECHANICAL].&[3D HD VIDEO SYSTEMS]
+
+} on rows
+FROM SalesOrders
+WHERE 
+(
+	STRTOMEMBER(@DateKey),
+	STRTOMEMBER(@SalesGeoMemberKey)	
+)
+		
+		

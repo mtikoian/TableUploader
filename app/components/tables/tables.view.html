@@ -1,0 +1,47 @@
+﻿
+
+
+<div id="mainDivContent" class="container-fluid content-area" ng-controller="TablesCtrl">
+
+		<div class="col-xs-12">
+			<h2 class="h2-header">Database Tables</h2>
+  
+            <button id="downloadTablesBtn" ng-click="downloadTable()" runat="server" class="k-button"><i class="fa fa-download fa-2x"> Download Table </i></button>
+            <button id="uploadTablesBtn" ng-click="uploadTable()" runat="server" class="k-button"><i class="fa fa-upload fa-2x"> Upload Table </i></button><br />
+            
+            <div id="tableGrid">
+                
+        </div>
+
+           
+		</div>
+
+
+
+
+
+
+    <div kendo-window id="loadWindow" k-title="'Load Table'" k-visible="false" k-options="loadWindowOpts">
+
+            <form class="k-form">
+               <label id="Label1" class="control-label">Please upload the completed template.</label>
+
+<input name="files" id="files" type="file" />
+                <br /><br />
+                <!--<button id="uploadTemplateBtn" ng-click="uploadQuotaTemplate()" runat="server" class="float-right"><i class="fa fa-upload fa-2x"> Upload </i></button>-->
+            </form>
+
+        </div>
+
+    <div kendo-window id="newTablesWindow" k-title="'New Table'" k-visible="false" k-options="newQuotasWindowOpts">
+        <button id="submitTableBtn" ng-click="submitTable()" runat="server" class="k-button"><i class="fa fa-paper-plane fa-2x"> Submit Table </i></button><br />
+           <div id="loadGrid">
+                
+        </div>
+
+        </div>
+
+
+    </div>
+
+ 	

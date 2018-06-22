@@ -1,0 +1,23 @@
+﻿WITH 
+MEMBER [Measures].[MemberLevel] AS
+	[Product].[Conmed Marketing Hierarchy].CurrentMember.Level_Number
+MEMBER [Measures].[MemberKey] AS 
+	[Product].[Conmed Marketing Hierarchy].CurrentMember.UniqueName
+MEMBER [Measures].[ChildCount] AS 
+	COUNT([Product].[Conmed Marketing Hierarchy].CurrentMember.Children)
+MEMBER [Measures].[MemberName] AS 
+	[Product].[Conmed Marketing Hierarchy].CurrentMember.Name
+MEMBER [Measures].[ParentKey] AS 
+	[Product].[Conmed Marketing Hierarchy].CurrentMember.Parent.UniqueName  
+MEMBER [Measures].[ParentName] AS 
+	[Product].[Conmed Marketing Hierarchy].CurrentMember.Parent.Name
+SELECT { 
+	[Measures].[MemberLevel],
+	[Measures].[MemberKey], 
+	[Measures].[MemberName], 
+	[Measures].[ParentKey], 
+	[Measures].[ParentName], 
+	[Measures].[ChildCount]
+} ON 0
+FROM [$Product]
+WHERE (STRTOMEMBER(@ProductKey))

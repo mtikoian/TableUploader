@@ -1,0 +1,14 @@
+﻿SELECT
+{
+	[Measures].[Commissioned Sales TC]	
+} ON 0,
+NON EMPTY
+{
+	([Ship To Customer Location].[Account Name].[All].Children,
+	[Ship To Customer Location].[Account Number].[All].Children)
+} ON 1
+FROM 
+	SalesOrders
+WHERE (
+	STRTOMEMBER(@SalesGeoMemberKey)	
+)

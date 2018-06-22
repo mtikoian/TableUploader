@@ -1,0 +1,19 @@
+﻿
+SELECT
+{
+	[Measures].[Commissioned Sales TC]
+} ON 0,
+NON EMPTY
+{
+	([Ship To Customer Location].[Location].[Location])
+	
+}
+DIMENSION PROPERTIES 
+MEMBER_UNIQUE_NAME,
+MEMBER_CAPTION 
+ON 1
+FROM 
+	SalesOrders
+WHERE (
+[Sales Geography].[Sales Geography].[Region].&[D1660]
+)

@@ -1,0 +1,20 @@
+﻿WITH MEMBER [Measures].[PeriodKey] AS [Date Commissioned].[Calendar Time].CurrentMember.UniqueName
+SELECT
+{
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[PMTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales USD],
+	[Measures].[PMTD Commissioned Sales USD]
+} ON 0,
+//NON EMPTY
+{
+	STRTOMEMBER(@DateKey).Lag(@TrailingPeriodCount) :
+	STRTOMEMBER(@DateKey).PrevMember //exclude current month
+} ON 1
+FROM 
+	SalesOrders
+WHERE 
+(
+	STRTOMEMBER(@SalesGeoMemberKey),
+	STRTOMEMBER(@ProductKey)
+)

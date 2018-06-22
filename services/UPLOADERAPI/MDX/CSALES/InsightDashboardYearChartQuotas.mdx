@@ -1,0 +1,18 @@
+﻿
+SELECT {
+
+	[Measures].[Full Month Quota TC]
+} ON 0,
+{
+
+	DESCENDANTS(
+	STRTOMEMBER(@DateKey), 
+	[Date Commissioned].[Calendar Time].[Month]
+	)
+
+
+} on 1
+	from SalesOrders
+WHERE (
+STRTOMEMBER(@SalesGeoMemberKey)
+)

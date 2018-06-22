@@ -1,0 +1,26 @@
+﻿WITH 
+	MEMBER [Measures].[PeriodKey] AS [Date Commissioned].[Calendar Time].CurrentMember.UniqueName
+
+	MEMBER [Measures].[Year Of] AS [Date Commissioned].[Calendar Time].CurrentMember.Parent.Parent.Name
+SELECT
+{
+	[Measures].[PeriodKey],
+	[Measures].[Year Of],
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales USD],
+	[Measures].[PMTD Commissioned Sales TC],	
+	[Measures].[PMTD Commissioned Sales USD]	
+} ON 0,
+NON EMPTY
+{
+	STRTOMEMBER(@DateKey).Lag(@TrailingPeriodCount) :
+	STRTOMEMBER(@DateKey).PrevMember //exclude current month
+} ON 1
+FROM 
+	SalesOrders
+WHERE 
+(
+	//STRTOMEMBER(@CustomerKey),
+	STRTOSET(@CustomerMemberKey),
+	STRTOMEMBER(@SalesGeoMemberKey)
+)

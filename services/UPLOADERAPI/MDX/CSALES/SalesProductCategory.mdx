@@ -1,0 +1,39 @@
+﻿
+WITH 
+//MEMBER [Measures].[productKey] AS
+  // [Product].[Conmed Item Hierarchy].CurrentMember.UniqueName
+
+MEMBER [Measures].[Trailing 12 Months Comissioned Sales TC] AS
+ SUM([Date Commissioned].[Calendar Time].CurrentMember:[Date Commissioned].[Calendar Time].CurrentMember.Lag(11),
+		[Measures].[Commissioned Sales TC])
+		
+MEMBER [Measures].[Trailing 12 Months Comissioned Sales USD] AS
+ SUM([Date Commissioned].[Calendar Time].CurrentMember:[Date Commissioned].[Calendar Time].CurrentMember.Lag(11),
+		[Measures].[Commissioned Sales USD])		
+
+MEMBER [Measures].[PY Trailing 12 Months Comissioned Sales TC] AS
+ SUM([Date Commissioned].[Calendar Time].CurrentMember.Lag(12):[Date Commissioned].[Calendar Time].CurrentMember.Lag(23),
+		[Measures].[Commissioned Sales TC])
+		
+MEMBER [Measures].[PY Trailing 12 Months Comissioned Sales USD] AS
+ SUM([Date Commissioned].[Calendar Time].CurrentMember.Lag(12):[Date Commissioned].[Calendar Time].CurrentMember.Lag(23),
+		[Measures].[Commissioned Sales USD])		
+
+SELECT
+{
+	//[Measures].[productKey],
+	[Measures].[Trailing 12 Months Comissioned Sales TC],
+	[Measures].[Trailing 12 Months Comissioned Sales USD],
+	[Measures].[PY Trailing 12 Months Comissioned Sales TC],
+	[Measures].[PY Trailing 12 Months Comissioned Sales USD] 
+} ON 0,
+{
+	STRTOMEMBER(@ProductKey).Children
+} ON 1
+FROM 
+	SalesOrders
+WHERE 
+(
+	STRTOMEMBER(@SalesGeoMemberKey),  
+	STRTOMEMBER(@DateKey).PrevMember
+)

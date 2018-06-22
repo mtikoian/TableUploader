@@ -1,0 +1,35 @@
+﻿/*WITH 
+MEMBER [Measures].[MemberKey] AS 
+	[Product].[Conmed Item Hierarchy].CurrentMember.UniqueName
+MEMBER [Measures].[Product Level] as
+	[Product].[Conmed Item Hierarchy].CurrentMember.Level.Name 
+SELECT 
+{	
+	[Measures].[MemberKey], 
+	[Measures].[Product Level]
+} ON COLUMNS,
+	STRTOMEMBER(@ProductKey).Children ON ROWS
+FROM 
+	[$Product]
+*/
+
+WITH 
+MEMBER [Measures].[MemberKey] AS 
+	[Product].[Conmed Item Hierarchy].CurrentMember.UniqueName
+MEMBER [Measures].[Product Level] as
+	[Product].[Conmed Item Hierarchy].CurrentMember.Level.Name 
+MEMBER [Measures].[HasSales] AS 
+	[Measures].[Commissioned Sales USD]
+SELECT 
+{	
+	[Measures].[MemberKey], 
+	[Measures].[Product Level]
+} ON COLUMNS,
+{
+	NonEmpty(STRTOMEMBER(@ProductKey).Children, [Measures].[HasSales])
+} ON ROWS
+FROM 
+	[SalesOrders]
+where(
+	STRTOMEMBER(@SalesGeoMemberKey)
+)	

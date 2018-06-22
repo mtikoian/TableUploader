@@ -1,0 +1,28 @@
+﻿WITH 
+MEMBER [Measures].[PY] AS 
+	(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year], 1, [Date Commissioned].[Calendar Time].CurrentMember), STRTOMEMBER(@ThisYearMeasure))
+MEMBER [Measures].[YoY] AS 
+	STRTOMEMBER(@ThisYearMeasure) - [Measures].[PY]
+MEMBER [Measures].[YoY%] AS 
+	IIF([Measures].[PY] <> 0,
+	(STRTOMEMBER(@ThisYearMeasure) - [Measures].[PY]) / [Measures].[PY], NULL)
+MEMBER [Measures].[PeriodKey] AS [Date Commissioned].[Calendar Time].CurrentMember.UniqueName
+SELECT
+{
+	STRTOMEMBER(@ThisYearMeasure),
+	[Measures].[PY],
+	[Measures].[YoY],
+	[Measures].[YoY%]
+} ON 0,
+{
+	NonEmpty(STRTOSET(@RowMembers), STRTOMEMBER(@ThisYearMeasure)) *
+	STRTOMEMBER(@DateKey).Lag(@TrailingPeriodCount) : STRTOMEMBER(@DateKey)
+} ON 1
+FROM 
+	SalesOrders
+WHERE 
+(
+	STRTOMEMBER(@SalesGeoMemberKey),
+	STRTOMEMBER(@CustomerKey),
+	STRTOMEMBER(@CapitalDisposableKey)
+)

@@ -1,0 +1,45 @@
+﻿WITH
+MEMBER
+	[PY Commissioned Sales USD] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Commissioned Sales USD]), FORMAT_STRING = "Currency"
+MEMBER
+	[PY Commissioned Sales TC] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Commissioned Sales TC]), FORMAT_STRING = "Currency"		
+MEMBER 
+	[PY Quantity Invoiced] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Quantity Invoiced])
+MEMBER [ID] as
+	([Sales Geography].[Sales Geography].CurrentMember.UniqueName)
+MEMBER [Level Name] as
+	([Sales Geography].[Sales Geography].CurrentMember.Name)	
+SELECT
+{
+	[Level Name],
+	[ID],
+	[Measures].[Commissioned Sales TC],
+	[Measures].[Commissioned Sales USD],
+	[PY Commissioned Sales TC],
+	[PY Commissioned Sales USD],		
+	[Measures].[YTD Commissioned Sales USD],
+	[Measures].[YTD Commissioned Sales TC],
+	[Measures].[PYTD Commissioned Sales TC],
+	[Measures].[PYTD Commissioned Sales USD],		
+	[Measures].[Quantity Invoiced],
+	[PY Quantity Invoiced]	
+} ON COLUMNS,
+NON EMPTY
+{
+	STRTOMEMBER(@SalesGeoMemberKey).Children *
+	//[Ship To Customer Location].[Account Number].Children *
+	//[Ship To Customer Location].[Account Name].Children *
+	//[Product].[Conmed Item Hierarchy].[C Item Division].&[POWER].Children *	
+	//{STRTOMEMBER(@DateKey).PrevMember : STRTOMEMBER(@DateKey).Lag(12)}
+	{STRTOMEMBER(@DateKey).Parent : STRTOMEMBER(@DateKey).Parent.Lag(@TrailingPeriodCount)}
+} ON ROWS
+FROM SalesOrders
+where(
+	STRTOMEMBER(@ProductKey),
+	STRTOMEMBER(@CustomerMemberKey),
+	STRTOMEMBER(@CapitalDisposableKey),
+	STRTOMEMBER(@DistributorKey)
+)

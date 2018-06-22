@@ -1,0 +1,96 @@
+﻿WITH 
+MEMBER [Measures].[YTD Sales USD] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Measures].[YTD Commissioned Sales USD]
+	 )	
+	 
+MEMBER [Measures].[YTD Sales Growth % USD] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Measures].[YTD Commissioned Sales Growth % USD]
+	 )		
+	 
+MEMBER [Measures].[YTD Sales TC] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Measures].[YTD Commissioned Sales TC]
+	 )	
+	 
+MEMBER [Measures].[YTD Sales Growth % TC] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Measures].[YTD Commissioned Sales Growth %]
+	 )		  
+
+MEMBER [Measures].[Capital Commissioned Sales TC] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Product].[US Comm Capital or Disposable].&[CAPITAL],
+	 [Measures].[YTD Commissioned Sales TC]
+	 )
+	 
+MEMBER [Measures].[Capital Growth % TC] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	  [Product].[US Comm Capital or Disposable].&[CAPITAL],
+	  [Measures].[YTD Commissioned Sales Growth %]
+	  )  
+	  
+MEMBER [Measures].[Capital Commissioned Sales USD] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Product].[US Comm Capital or Disposable].&[CAPITAL],
+	 [Measures].[YTD Commissioned Sales USD]
+	 )
+	 
+MEMBER [Measures].[Capital Growth % USD] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	  [Product].[US Comm Capital or Disposable].&[CAPITAL],
+	  [Measures].[YTD Commissioned Sales Growth % USD]
+	  )	  
+	  
+MEMBER [Measures].[Disposable Commissioned Sales TC] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Product].[US Comm Capital or Disposable].&[DISPOSABLE],
+	 [Measures].[YTD Commissioned Sales TC]
+	 )
+	 
+MEMBER [Measures].[Disposable Growth % TC] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	  [Product].[US Comm Capital or Disposable].&[DISPOSABLE],
+	  [Measures].[YTD Commissioned Sales Growth %]
+	  )
+	  
+MEMBER [Measures].[Disposable Commissioned Sales USD] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	 [Product].[US Comm Capital or Disposable].&[DISPOSABLE],
+	 [Measures].[YTD Commissioned Sales USD]
+	 )
+	 
+MEMBER [Measures].[Disposable Growth % USD] AS
+	(STRTOMEMBER(@DateKey).PrevMember, 
+	  [Product].[US Comm Capital or Disposable].&[DISPOSABLE],
+	  [Measures].[YTD Commissioned Sales Growth % USD]
+	  )	  
+SELECT
+{	
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales Growth %],
+	[Measures].[MTD Commissioned Sales USD],
+	[Measures].[MTD Commissioned Sales Growth % USD],	
+	[Measures].[YTD Sales TC],
+	[Measures].[YTD Sales Growth % TC],		
+	[Measures].[YTD Sales USD],
+	[Measures].[YTD Sales Growth % USD],
+	[Measures].[Capital Commissioned Sales TC],
+	[Measures].[Capital Growth % TC],
+	[Measures].[Capital Commissioned Sales USD],
+	[Measures].[Capital Growth % USD],	
+	[Measures].[Disposable Commissioned Sales TC],
+	[Measures].[Disposable Growth % TC],
+	[Measures].[Disposable Commissioned Sales USD],
+	[Measures].[Disposable Growth % USD]
+} ON 0
+FROM 
+	SalesOrders
+WHERE	
+(
+	STRTOMEMBER(@SalesGeoMemberKey)	,  
+	STRTOMEMBER(@DateKey),
+	//STRTOMEMBER(@CustomerMemberKey)//[Ship To Customer Location].[Account Number].&[58149]
+	STRTOSET(@CustomerMemberKey)
+)

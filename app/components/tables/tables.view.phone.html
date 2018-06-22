@@ -1,0 +1,489 @@
+﻿<script id="template" type="text/x-kendo-template">
+  <div>#: category #</div>
+  # for (var i = 0; i < points.length; i++) { #
+    <div>#: points[i].series.name# : #: points[i].value #</div>
+  # } #
+</script>
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation" ng-controller="NavbarCtrl" ng-include="'menu.html'">
+	<!--<div class="container-fluid">
+	    <div class="navbar-header" style="position:relative;">
+	    	<button type="button" class="navbar-toggle sidebar" data-toggle="offcanvas" data-target="#sidebar" data-canvas="body">
+	    		<img src="assets/img/TreeNavIconSM.png" alt="Treeview Menu">
+			</button>
+	
+			<button type="button" class="navbar-toggle collapsed navbar-right" data-toggle="collapse" data-target="#mainNav" ng-click="isCollapsed = !isCollapsed">
+		        <span class="sr-only">Toggle navigation</span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+			</button>
+	    </div>
+
+		<div class="collapse navbar-collapse" id="mainNav" uib-collapse="isCollapsed">
+			<ul class="nav navbar-nav">
+				<li class="dropdown">
+					<a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="assets/img/DashboardIconSM.png" alt="Dashboard Link"> Dashboards <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li class="active" ng-click="GoToDashboard()"><a href="">Territory Dashboard</a></li>
+						<li ng-click="GoToRegionDashboard()"><a href="">Performance Dashboard</a></li>
+					</ul>
+				</li>
+
+				<li ng-click="GoToOrders()"><a href=""><img src="assets/img/OrdersIconSM.png" alt="Orders Link"> Orders</a></li>
+				<li class="dropdown">
+					<a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="assets/img/CustomersIconSM.png" alt="Customers Link"> Customers <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li ng-click="GoToCustomers()"><a href="">Growth Map</a></li>
+						<li ng-click="GoToCustDetails()"><a href="">Customer Profile</a></li>
+					</ul>
+				</li>
+				<li ng-click="GoToProducts()"><a href=""><img src="assets/img/ProductsIconSM.png" alt="Products Link"> Products</a></li>
+				<li ng-click="GoToRankings()"><a href=""><img src="assets/img/Rankings.png" alt="Rankings"> Rankings</a></li>
+				<li class="disabled"><a href=""><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Export</a></li>
+				<li class="dropdown">
+					<a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="assets/img/HelpIconSM.png" alt="Help Link"> Help <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li ng-click="GoToDashHelp()"><a href="">This Page</a></li>
+						<li ng-click="GoToVideosHelp()"><a href="">Videos</a></li>
+						<li><a href="mailto:LargoHelpDesk@conmed.com?subject=Insight Help" class="help-link">Email Help Desk</a></li>
+
+					</ul>
+				</li>
+				<li ng-click="Logout()"><a href=""><img src="assets/img/Logout.png" alt="Logout"> Logout</a></li>
+			</ul>
+		</div>
+	</div> -->
+</nav>
+
+<!-- Sidebar Menu Containing Customers -->
+<nav id="sidebar" class="navmenu navmenu-default navmenu-fixed-left offcanvas ui-front" role="navigation" ng-controller="SidebarCtrl">
+	<!--<a class="navmenu-brand" href="#"></a>-->
+	<div style="margin:5px">
+		<input id="geogSearchList" kendo-auto-complete k-options="geogSearchListOptions" style="width: 100%;" k-ng-model="selectedGeogSearchVal" k-value-primitive="true" style="z-index: 100000">
+			  <span ng-show="geogSearchHasSelection" id="geogSearchAutoCompleteClear" title="Clear Selection" style="position: absolute;top: 12px !important;right: 8px !important; background:white; font-size:x-large; color:#00a1d9;"  ng-click="clearSelectedAcct();" class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>			
+		</input>
+	</div>
+	<div id="popupList"></div>
+
+	<div ng-show="showGeogTree">
+		<br>
+		<div id="geogTreeView" kendo-tree-view="tree" 
+			 k-options="treeOptions" 
+			 ng-click="treeClicked($event)"></div>
+	</div>
+		
+	
+	<!--<div ng-hide="showGeogTree" style="height:100%; width:100%; background:red; position:absolute; top:0px;">
+		<button ng-click="ToggleSearch('ShowTree')" type="button" class="btn btn-default">
+		  <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Go Back		
+		 </button>		
+	</div>
+	-->
+</nav>
+
+<!--<nav id="sidebar" class="navmenu navmenu-default navmenu-fixed-left offcanvas" role="navigation">
+
+	<div class="navmenu-brand"></div>
+	<div ng-controller="SidebarCtrl">
+		<div kendo-tree-view="tree" 
+			 k-options="treeOptions" 
+			 ng-click="treeClicked($event)"></div>
+	</div>
+</nav>
+-->
+	
+<div class="container-fluid content-area" ng-controller="DashboardCtrlPhone">
+	<div class="row">
+        <div ng-controller="TimeframeCtrl">
+		<div class="col-xs-12" ng-controller="CurrencyCtrl">
+				<ul class="nav nav-pills" style="position:absolute; right:100px; min-width:135px;">
+				  <li id="timeframeToggleList" role="presentation" class="dropdown" ng-style="xxx">
+				    <a class="dropdown-toggle" data-toggle="dropdown" style="padding-top:5px; height:30px; color:white;" href="" role="button" aria-haspopup="true" aria-expanded="false">
+				     <span class="glyphicon glyphicon-time" style="margin-right:5px;"></span>{{TimeFrameLabel}}<span class="caret" style="margin-left:5px;"></span>
+				    </a>
+				    <ul class="dropdown-menu">
+					    <li ng-click="toggleTimeframe('Yesterday')"><a href="" ng-click="toggleTimeframe('Yesterday')">Yesterday</a></li>
+					    <li ng-click="toggleTimeframe('Last Month')"><a href="">Last Month</a></li>
+					    <li ng-show="ShowQ1" ng-click="toggleTimeframe('End of Q1')"><a href="">End of Q1</a></li>
+					    <li ng-show="ShowQ2" ng-click="toggleTimeframe('End of Q2')"><a href="">End of Q2</a></li>					    
+					    <li ng-show="ShowQ3" ng-click="toggleTimeframe('End of Q3')"><a href="">End of Q3</a></li>						    
+					    <li ng-click="toggleTimeframe('End of Prior Year')"><a href="">End of Prior Year</a></li>	
+                        <li ng-click="openTimeframeCustomSelection()">{{timeframeDatePicker}}<a href="">Custom Month</a></li>
+				    </ul>
+				  </li>
+				</ul>
+
+		    <select kendo-drop-down-list="currencyListing"
+		    		k-options="currencyListOptions"
+		    		k-ng-model="foreignCurrencyLabel" 
+		    		k-value-primitive="true"
+		    		style="width: 80px;"
+		    		class="pull-right"></select>
+		    </div>
+
+            <div kendo-window id="timeframeDatePicker" class="demo-section k-content" k-title="'Custom Month'" k-visible="false" k-options="timeframeWindowOpts" onkeydown="return false;">
+            <input id="monthpicker"  value="" title="monthpicker" style="width: 100%" />
+                <br /><br /><button type="button" class="btn-xs btn-success" ng-click="refreshAsOfDate()">Apply</button>	
+           </div>
+
+            </div>
+	</div>	
+	
+	<div class="row">
+		<div class="col-xs-12">
+			<h3 class="h3-header">{{geogName}}</h3>
+		</div>
+	
+	</div>
+ 	
+	<div class="row">
+		<div class="col-md-12">
+			<div id="directTracePanel" class="panel panel-conmed">
+				<div class="panel-heading">
+					<div class="row">
+						<div class="col-xs-12">
+							<h3 class="panel-title">{{quotaMonth}} Commissionable Sales vs. Quota</h3>
+						</div>
+					</div>
+				</div>
+				<div class="panel-body">
+		            <div class="row">
+		            	<div class="col-lg-12">
+		            		<!--Tables below are split by currency usd vs local. Need to change later...-->
+		            		<table id="currentMonthData" ng-repeat="x in currentMonthDataTable" class="chart-data-table" ng-if="USDCurrency == true">
+				            	<tr style="font-weight:bold">
+				            		<td>Commissionable Sales</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.DirectTraceActUSD + x.CurrentOpen + x.PriorOpen)}}</td>
+				            	</tr>			            		
+				            	<tr>
+				            		<td>Direct Sales (act)</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.DirectUSD)}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>Trace (act)</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.ActTracingsUSD)}}</td>
+								</tr>
+				            	<tr>
+				            		<td>Direct (act) & Trace (act)</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.DirectTraceActUSD)}}</td>
+				            	</tr>
+				            	<tr ng-if="showCommSales == true">
+				            		<td>Open Orders</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.CurrentOpen)}}</td>
+				            	</tr>
+				            	<tr ng-if="showCommSales == true">
+				            		<td>Prior Month OO</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.PriorOpen)}}</td>
+				            	</tr>							
+								<tr>
+				            		<td>Prior Day Invoiced ({{yesterdayDataTableLabel}})</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.PriorDaySales)}}</td>
+				            	</tr>
+								<tr>
+				            		<td>Days Remaining</td>
+				            		<td style="text-align:right">{{x.BusDaysRemain}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>MTD PTQ (act)</td>
+				            		<td style="text-align:right">{{x.PcntToQuotaUSD}}%</td>		            				            		
+				            	</tr>		            	
+				            	<tr>
+				            		<td>Month Quota</td>
+				            		<td ng-if="DefaultGeogCurrency == '$USD'" style="text-align:right">{{currencyFormatter(x.Quota)}}</td>
+				            		<td ng-if="DefaultGeogCurrency !== '$USD'" style="text-align:right">N/A</td>				            				            				            		
+				            	</tr>		            	
+								<tr>
+				            		<td>Month +/- To Quota</td>
+				            		<td ng-if="DefaultGeogCurrency == '$USD'" style="text-align:right">{{currencyFormatter(x.ToQuotaUSD)}}</td>
+				            		<td ng-if="DefaultGeogCurrency !== '$USD'" style="text-align:right">N/A</td>				            				            				            		
+				            	</tr>		            	
+				            	<tr>
+				            		<td>Month PTQ (act)</td>
+				            		<td style="text-align:right">{{x.FullMonPTQUSD}}%</td>		            				            		
+				            	</tr>			            	
+				            	
+				            	<tr>
+				            		<td>Avg Daily Needed</td>
+				            		<td ng-if="DefaultGeogCurrency == '$USD'" style="text-align:right">{{currencyFormatter(x.AvgDailyUSD)}}</td>
+				            		<td ng-if="DefaultGeogCurrency !== '$USD'" style="text-align:right">N/A</td>				            				            				            		
+				            	</tr>
+				            </table>
+		            		
+		            		<table id="currentMonthData" ng-repeat="x in currentMonthDataTable" class="chart-data-table" ng-if="USDCurrency == false">
+				            	<tr style="font-weight:bold">
+				            		<td>Commissionable Sales</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.DirectTraceActLocal + x.CurrentOpen + x.PriorOpen)}}</td>
+				            	</tr>		            		
+				            	<tr>
+				            		<td>Direct Sales (act)</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.DirectLocal)}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>Trace (act)</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.ActTracingsLocal)}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>Direct (act) & Trace (act)</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.DirectTraceActLocal)}}</td>
+				            	</tr>
+				            	<tr ng-if="showCommSales == true">
+				            		<td>Open Orders</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.CurrentOpen)}}</td>
+				            	</tr>
+				            	<tr ng-if="showCommSales == true">
+				            		<td>Prior Month OO</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.PriorOpen)}}</td>
+				            	</tr>					            	
+				            	<tr>
+				            		<td>Prior Day Invoiced ({{yesterdayDataTableLabel}})</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.PriorDaySalesLoc)}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>Days Remaining</td>
+				            		<td style="text-align:right">{{x.BusDaysRemain}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>MTD PTQ (act)</td>
+				            		<td style="text-align:right">{{x.PcntToQuotaLocal}}%</td>		            				            		
+				            	</tr>
+				            	<tr>
+				            		<td>Month Quota</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.Quota)}}</td>		            				            		
+				            	</tr>		            	
+				            	<tr>	
+				            		<td>Month +/- To Quota</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.ToQuotaLocal)}}</td>		            				            		
+				            	</tr>		            	
+				            	<tr>
+				            		<td>Month PTQ (act)</td>
+				            		<td style="text-align:right">{{x.FullMonPTQLocal}}%</td>		            				            		
+				            	</tr>			            	
+				            	<tr>
+				            		<td>Avg Daily Needed</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.AvgDailyLocal)}}</td>		            				            		
+				            	</tr>
+				            </table>
+				    	</div>
+		            </div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12">
+			<div id="ytdPanel" class="panel panel-conmed">
+				<div class="panel-heading">
+					<div class="row">
+						<div class="col-xs-12">
+							<h3 class="panel-title">This Year Commissionable Sales vs. Quota</h3>
+						</div>
+					</div>
+				</div>
+				<div class="panel-body" style="position:relative;">
+					<div class="row">
+						<div class="col-lg-12">
+							<table ng-repeat="x in YearSalesDataTable" class="chart-data-table" ng-if="USDCurrency == true">
+				            	<tr>
+				            		<td>YTD Commissionable Sales</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.CommSalesUSD)}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>YTD Quota</td>
+				            		<td ng-if="DefaultGeogCurrency == '$USD'" style="text-align:right">{{currencyFormatter(x.YTDQuota)}}</td>
+				            		<td ng-if="DefaultGeogCurrency !== '$USD'" style="text-align:right">N/A</td>				            		
+				            	</tr>
+				            	<tr>
+				            		<td>YTD Percent to Quota</td>
+				            		<td style="text-align:right">{{x.PcntToQuota}}%</td>
+				            	</tr>
+				            	
+				            	
+				            	<tr>
+				            		<td>YTD +/- To Quota</td>
+				            		<td ng-if="DefaultGeogCurrency == '$USD'" style="text-align:right">{{currencyFormatter(x.YTDOverUnder)}}</td>
+				            		<td ng-if="DefaultGeogCurrency !== '$USD'" style="text-align:right">N/A</td>				            		
+				            	</tr>
+				            	
+				            	
+				            	<tr>
+				            		<td>QTD Commissionable Sales</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.QTDCommSalesUSD)}}</td> 
+				            	</tr>
+				            	
+				            	<tr>
+				            		<td>QTD Quota</td>
+				            		<td ng-if="DefaultGeogCurrency == '$USD'" style="text-align:right">{{currencyFormatter(x.QTDQuotaTC)}}</td>
+				            		<td ng-if="DefaultGeogCurrency !== '$USD'" style="text-align:right">N/A</td>				            		 
+				            	</tr>
+				            	
+				            	
+				            	<tr>
+				            		<td>QTD Percent to Quota</td>
+				            		<td style="text-align:right">{{x.QTDPcntToQuota}}%</td> 
+				            	</tr>
+
+				            	<tr>
+				            		<td>QTD +/- To Quota</td>
+				            		<td ng-if="DefaultGeogCurrency == '$USD'" style="text-align:right">{{currencyFormatter(x.QTDOverUnder)}}</td> 
+				            		<td ng-if="DefaultGeogCurrency !== '$USD'" style="text-align:right">N/A</td> 				            		
+				            	</tr>
+
+
+
+
+				            	<tr>
+				            		<td>YTD Capital % of Sales</td>
+				            		<td style="text-align:right">{{x.CapPcntUSD}}%</td>		            				            		
+				            	</tr>		            	
+				            	<tr>
+				            		<td>YTD Growth</td>
+				            		<td style="text-align:right">{{x.YTDGrowthPcnt}}%</td>		            				            		
+				            	</tr>		            	
+				            	<tr>
+				            		<td>YTD Capital Growth %</td>
+				            		<td style="text-align:right">{{x.CapGrowthUSD}}%</td>		            				            		
+				            	</tr>
+				            	<tr>
+				            		<td>YTD Disposable Growth %</td>
+				            		<td style="text-align:right">{{x.DispGrowthUSD}}%</td>            				            		
+				            	</tr>	
+				            						            						            					            		            	
+				            </table>
+				            
+							<table ng-repeat="x in YearSalesDataTable" class="chart-data-table" ng-if="USDCurrency == false">
+				            	<tr>
+				            		<td>YTD Commissionable Sales</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.CommSalesLocal)}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>YTD Quota</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.YTDQuota)}}</td>
+				            	</tr>
+				            	<tr>
+				            		<td>YTD Percent to Quota</td>
+				            		<td style="text-align:right">{{x.PcntToQuota}}%</td>
+				            	</tr>
+				            	<tr>
+				            		<td>YTD +/- To Quota</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.YTDOverUnder)}}</td>
+				            	</tr>
+				            	
+				            	
+				            	<tr>
+				            		<td>QTD Commissionable Sales</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.QTDCommSalesLoc)}}</td> 
+				            	</tr>
+				            	
+				            	<tr>
+				            		<td>QTD Quota</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.QTDQuotaTC)}}</td> 
+				            	</tr>
+				            	
+				            	
+				            	<tr>
+				            		<td>QTD Percent to Quota</td>
+				            		<td style="text-align:right">{{x.QTDPcntToQuota}}%</td> 
+				            	</tr>
+
+				            	<tr>
+				            		<td>QTD +/- To Quota</td>
+				            		<td style="text-align:right">{{currencyFormatter(x.QTDOverUnder)}}</td> 
+				            	</tr>
+				            	
+				            	<tr>
+				            		<td>YTD Capital % of Sales</td>
+				            		<td style="text-align:right">{{x.CapPcntLocal}}%</td>		            				            		
+				            	</tr>		            	
+				            	<tr>
+				            		<td>YTD Growth</td>
+				            		<td style="text-align:right">{{x.YTDGrowthPcnt}}%</td>		            				            		
+				            	</tr>		            	
+				            	<tr>
+				            		<td>YTD Capital Growth %</td>
+				            		<td style="text-align:right">{{x.CapGrowthLoc}}%</td>		            				            		
+				            	</tr>
+				            	<tr>
+				            		<td>YTD Disposable Growth %</td>
+				            		<td style="text-align:right">{{x.DispGrowthLoc}}%</td>            				            		
+				            	</tr>
+				            </table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-lg-12">
+			<div id="prodGrowthPanel" class="panel panel-conmed">
+				<div class="panel-heading">
+					<div class="row">
+						<div class="col-sm-12">
+							<h3 class="panel-title">Invoiced Sales Growth</h3>
+						</div>
+					</div>
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-sm-6 text-center">
+							<div class="btn-group"> <!--TODO: When scaling down to col-xs do not pull-right-->
+						        <label class="btn btn-conmed active" ng-model="growthTimeframe" uib-btn-radio="'YTD'" ng-click="GetUpDownData()">YTD</label>
+						        <label class="btn btn-conmed" ng-model="growthTimeframe" uib-btn-radio="'QTD'" ng-click="GetUpDownData()">QTD</label>
+						        <label class="btn btn-conmed" ng-model="growthTimeframe" uib-btn-radio="'MTD'" ng-click="GetUpDownData()">MTD</label>
+						    </div>    							
+						</div>
+						<div class="col-sm-6 text-center">
+							<div class="btn-group">
+						        <label class="btn btn-conmed active" ng-model="growthCapDisp" uib-btn-radio="'All'" ng-click="GetUpDownData()">All</label>
+						        <label class="btn btn-conmed" ng-model="growthCapDisp" uib-btn-radio="'Disposable'" ng-click="GetUpDownData()">Disposable</label>
+						        <label class="btn btn-conmed" ng-model="growthCapDisp" uib-btn-radio="'Capital'" ng-click="GetUpDownData()">Capital</label>
+						    </div> 
+						</div>
+					</div>
+					<div class="row" style="overflow:auto; height:225px;">
+						<div class="col-sm-12 panel-col-scroll" id="growthHeight">							
+							<table style="width: 100%;">
+								<thead>
+									<tr>
+										<th style="width: 80%;">Product Hierarchy</th>
+										<th style="width: 20%; text-align: center;">YoY%</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr ng-repeat="x in custUpDownDataRows">
+										<td> 									
+											<div ng-if="x.ProdLevel == 'Division'">
+												<b ng-if="x.LevelName == 'Total'" style="font-size:large;">
+													{{x.LevelName}}
+												</b>
+												<b ng-if="x.LevelName !== 'Total'">
+													{{x.LevelName}}
+												</b>
+											</div>	
+											<div ng-if="x.ProdLevel !== 'Division'">
+													{{x.LevelName}}
+											</div>																																	
+										</td>									
+										<td align="right" style="background-color:{{x.OverallGrowthColor}}">
+											<div ng-if="x.ProdLevel === 'Division'">
+												<b>{{x.OverallGrowth}}</b>
+											</div>
+											<div ng-if="x.ProdLevel !== 'Division'">
+												{{x.OverallGrowth}}
+											</div>
+
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			<label class="pull-right">{{yesterdayDate}}</label>
+		</div>
+	</div>
+</div>
+<!-- /container -->

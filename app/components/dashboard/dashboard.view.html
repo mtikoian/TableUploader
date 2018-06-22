@@ -1,0 +1,99 @@
+﻿
+
+
+<div id="mainDivContent" class="container-fluid content-area" ng-controller="DashboardCtrl">
+
+	<div class="col-xs-3">
+        
+        <h2 class="h2-header">Geography</h2>
+		<!--<input id="geogSearchList" kendo-auto-complete k-options="geogSearchListOptions" style="width: 100%;" k-ng-model="selectedGeogSearchVal" k-value-primitive="true" style="z-index: 100000">
+			  <span ng-show="geogSearchHasSelection" id="geogSearchAutoCompleteClear" title="Clear Selection" style="position: absolute;top: 12px !important;right: 8px !important; background:white; font-size:x-large; color:#00a1d9;"  ng-click="clearSelectedAcct();" class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>			
+		</input>-->
+        
+	<button id="getQuotasBtn" ng-click="getQuotas()" runat="server" class="k-button"><i class="fa fa-arrow-circle-down fa-2x"> Show Quotas </i></button>
+	<div id="popupList"></div>
+
+	<div id="leftPanel"><div ng-show="showGeogTree" style="height:100%">
+		<br>
+		<div id="geogTreeView" style="height:100%" kendo-tree-view="tree" 
+			 k-options="treeOptions" 
+			 ng-click="treeClicked($event)"></div>
+        <br />
+        </div>
+	</div>
+		
+
+    
+	
+
+	<div class="page-loading"></div>	
+</div>
+		<div class="col-xs-9">
+			<h2 class="h2-header">Quotas</h2>
+            <!--<button id="addQuotasBtn" ng-click="addQuotas()" runat="server" class="float-right"><i class="fa fa-plus fa-2x"> Add Quotas </i></button><br />-->
+            
+
+            <button id="downloadQuotasBtn" ng-click="downloadQuotas()" runat="server" class="k-button"><i class="fa fa-download fa-2x"> Download Template </i></button>
+            <button id="uploadQuotasBtn" ng-click="uploadQuotas()" runat="server" class="k-button"><i class="fa fa-upload fa-2x"> Upload Quotas </i></button><br />
+            
+            <div id="quotaGrid">
+                
+        </div>
+
+           
+		</div>
+
+
+    <div kendo-window id="editWindow" k-title="'Edit Quotas'" k-visible="false" k-options="editWindowOpts">
+
+            <form class="k-form">
+                
+                <label class="header-fields">
+                    <span>Capital</span>
+                    <input id="addCapital" />
+                </label><br /><br />
+                <label class="header-fields">
+                    <span>Disposable</span>
+                    <input id="addDisposable" />
+                </label><br /><br />
+                <label class="header-fields">
+                    <span>Tissue</span>
+                    <input id="addTissue" />
+                </label><br /><br />
+                
+                <br />
+                <br />
+                <button id="updateQuotasBtn" runat="server" class="float-right"><i class="fa fa-refresh fa-2x"> Update </i></button>
+                
+                <br />
+
+            </form>
+
+        </div>
+
+
+
+    <div kendo-window id="loadWindow" k-title="'Load Quotas'" k-visible="false" k-options="loadWindowOpts">
+
+            <form class="k-form">
+               <label id="Label1" class="control-label">Please upload the completed template.</label>
+
+<input name="files" id="files" type="file" />
+                <br /><br />
+                <!--<button id="uploadTemplateBtn" ng-click="uploadQuotaTemplate()" runat="server" class="float-right"><i class="fa fa-upload fa-2x"> Upload </i></button>-->
+            </form>
+
+        </div>
+
+    <div kendo-window id="newQuotasWindow" k-title="'New Quotas'" k-visible="false" k-options="newQuotasWindowOpts">
+        <button id="submitQuotasBtn" ng-click="submitQuotas()" runat="server" class="k-button"><i class="fa fa-paper-plane fa-2x"> Submit Quotas </i></button><br />
+           <div id="loadGrid">
+                
+        </div>
+
+        </div>
+
+
+    </div>
+
+ 	

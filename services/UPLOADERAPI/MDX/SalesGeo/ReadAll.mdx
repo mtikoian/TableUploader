@@ -1,0 +1,19 @@
+﻿WITH 
+MEMBER [Measures].[KeyLevelA] AS [Sales Geography].[Sales Geography].CurrentMember.Parent.Parent.Parent.Parent.Parent.Parent.UniqueName
+MEMBER [Measures].[KeyLevelB] AS [Sales Geography].[Sales Geography].CurrentMember.Parent.Parent.Parent.Parent.Parent.UniqueName
+MEMBER [Measures].[KeyLevelC] AS [Sales Geography].[Sales Geography].CurrentMember.Parent.Parent.Parent.Parent.UniqueName
+MEMBER [Measures].[KeyLevelD] AS [Sales Geography].[Sales Geography].CurrentMember.Parent.Parent.Parent.UniqueName
+MEMBER [Measures].[KeyLevelE] AS [Sales Geography].[Sales Geography].CurrentMember.Parent.Parent.UniqueName
+MEMBER [Measures].[KeyLevelF] AS [Sales Geography].[Sales Geography].CurrentMember.Parent.UniqueName
+MEMBER [Measures].[KeyGeoId] AS [Sales Geography].[Sales Geography].CurrentMember.UniqueName
+SELECT 
+{
+[Measures].[KeyLevelA], 
+[Measures].[KeyLevelB], 
+[Measures].[KeyLevelC], 
+[Measures].[KeyLevelD], 
+[Measures].[KeyLevelE], 
+[Measures].[KeyLevelF], 
+[Measures].[KeyGeoId]
+} 
+ON COLUMNS, { DESCENDANTS([Sales Geography].[Sales Geography].[Global].&[A10], [Sales Geography].[Sales Geography].[Geography ID]) } ON ROWS FROM [$Sales Geography]

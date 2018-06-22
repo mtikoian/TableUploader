@@ -1,0 +1,283 @@
+﻿WITH 
+	MEMBER [Measures].[Geog ID] as
+		[Sales Geography].[Sales Geography].CurrentMember.Properties("Key")		
+		
+	MEMBER [Measures].[Parent Name] as
+		[Sales Geography].[Sales Geography].CurrentMember.Parent.Name	
+
+	//National Sales Rankings			
+     MEMBER [Measures].[Natl Sales Rank MTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			[Measures].[Sales MTD])		
+			
+     MEMBER [Measures].[Natl Sales Rank QTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			[Measures].[Sales QTD])		
+			
+     MEMBER [Measures].[Natl Sales Rank YTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			[Measures].[Sales YTD])							
+		
+	//National PTQ Rankings		
+     MEMBER [Measures].[Natl PTQ Rank MTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			[Measures].[Full Month PTQ])								
+			
+     MEMBER [Measures].[Natl PTQ Rank QTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			[Measures].[Full Quarter PTQ])						
+			
+     MEMBER [Measures].[Natl PTQ Rank YTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			[Measures].[Full Year PTQ])		
+	
+	//MTD Rankings
+     MEMBER [Measures].[PTQ Rank MTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			[Full Month PTQ])
+			
+     MEMBER [Measures].[Sales Rank MTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			[Measures].[Sales MTD])	
+		
+	//QTD Rankings	
+     MEMBER [Measures].[PTQ Rank QTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			[Full Quarter PTQ])		
+			
+     MEMBER [Measures].[Sales Rank QTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			[Measures].[Sales QTD])	
+
+	//YTD Rankings
+     MEMBER [Measures].[PTQ Rank YTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			[Full Year PTQ])		
+			
+     MEMBER [Measures].[Sales Rank YTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+			STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			[Measures].[Sales YTD]
+		)					 
+ 
+	//Sales with Open Orders
+	MEMBER [Measures].[Sales YTD] as
+		[Measures].[YTD Commissioned Sales TC] + [Measures].[Open Order Line Amount TC]
+		
+	MEMBER [Measures].[Sales QTD] as
+		[Measures].[QTD Commissioned Sales TC] + [Measures].[OpenOrderAmt QTD]				
+	
+	MEMBER [Measures].[Sales MTD] as
+		[Measures].[MTD Commissioned Sales TC] + [Measures].[Open Order Line Amount TC] + [Measures].[Prior Month Open USD]	
+	
+   //Open Orders
+	member [Measures].[Open Order Line Amount TC] as
+	   ( 
+		([Measures].[Order Line Amount TC], [Commissionable Flag].[Commissionable].&[Yes]) 	
+	   )   
+   
+   //Open Order Cals
+	member [Measures].[Prior Month Open USD] as
+			(
+				PARALLELPERIOD([Date Commissioned].[Calendar Time].[Month],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent)
+				, [Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+			)	* -1	
+		
+	member [Measures].[Prior Month OO] as
+			(
+			[Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+		)	
+		
+	member [Measures].[Current Month OO] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Quarter],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent)
+			, [Measures].[ME Order Amount]
+		)		 		
+		
+	member NetOpen as
+		([Measures].[Prior Month OO] - [Measures].[Current Month OO])
+	
+	member [Measures].[OpenOrderAmt QTD] as
+		([Measures].[Order Line Amount TC], [Commissionable Flag].[Commissionable].&[Yes]) + NetOpen		
+		 
+		
+	//National Growth Rankings
+     MEMBER [Measures].[Natl Growth Rank MTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			IIF( IsEmpty([Measures].[MTD Commissioned Sales Growth %]), -99999999.0, [Measures].[MTD Commissioned Sales Growth % USD])
+		)	
+			
+     MEMBER [Measures].[Natl Growth Rank QTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			IIF( IsEmpty([Measures].[QTD Commissioned Sales Growth %]), -99999999.0, [Measures].[QTD Commissioned Sales Growth % USD])
+		)
+			
+     MEMBER [Measures].[Natl Growth Rank YTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent, Levels(@ChildMember)
+			), 
+			IIF( IsEmpty([Measures].[YTD Commissioned Sales Growth %]), -99999999.0, [Measures].[YTD Commissioned Sales Growth % USD])
+		)											
+				
+	//Growth Rankings			
+     MEMBER [Measures].[Growth Rank MTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			IIF( IsEmpty([Measures].[MTD Commissioned Sales Growth %]), -99999999.0, [Measures].[MTD Commissioned Sales Growth % USD])
+		)
+			
+     MEMBER [Measures].[Growth Rank QTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			IIF( IsEmpty([Measures].[QTD Commissioned Sales Growth %]), -99999999.0, [Measures].[QTD Commissioned Sales Growth % USD])
+		)
+			
+     MEMBER [Measures].[Growth Rank YTD] AS
+     RANK(
+		[Sales Geography].[Sales Geography].CurrentMember, 
+		DESCENDANTS(
+				STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+			), 
+			IIF( IsEmpty([Measures].[YTD Commissioned Sales Growth %]), -99999999.0, [Measures].[YTD Commissioned Sales Growth % USD])
+		)							
+		
+	//PRIOR YEAR SALES
+	MEMBER [Measures].[Sales PYTD] as
+		[Measures].[PYTD Commissioned Sales]
+		
+	MEMBER [Measures].[Sales PQTD] as
+		[Measures].[PQTD Commissioned Sales]		
+	
+	MEMBER [Measures].[Sales PMTD] as
+		[Measures].[PMTD Commissioned Sales]
+		
+	//PRIOR YEAR SALES
+	MEMBER [Measures].[Growth % MTD] as
+		[Measures].[MTD Commissioned Sales Growth %]
+		
+	MEMBER [Measures].[Growth % QTD] as
+		[Measures].[QTD Commissioned Sales Growth %]	
+	
+	MEMBER [Measures].[Growth % YTD] as
+		[Measures].[YTD Commissioned Sales Growth %]		
+		
+			
+SELECT 
+ ({ 
+	[Measures].[Parent Name],
+	[Measures].[Geog ID],
+
+	[Measures].[Sales MTD],
+	[Measures].[Sales YTD],	
+	[Measures].[Sales QTD],	
+	
+	[Measures].[Sales PMTD],
+	[Measures].[Sales PQTD],
+	[Measures].[Sales PYTD],
+
+	[Measures].[Growth % MTD],
+	[Measures].[Growth % QTD],
+	[Measures].[Growth % YTD],
+
+	[Measures].[Natl Sales Rank MTD],
+	[Measures].[Natl Sales Rank QTD],
+	[Measures].[Natl Sales Rank YTD],	
+	[Measures].[Natl PTQ Rank MTD],
+	[Measures].[Natl PTQ Rank QTD],
+	[Measures].[Natl PTQ Rank YTD],	
+	
+	[Measures].[Full Month PTQ],
+	[Measures].[Full Quarter PTQ],
+	[Measures].[Full Year PTQ],
+	[Measures].[PTQ Rank MTD],
+	[Measures].[PTQ Rank QTD],
+	[Measures].[PTQ Rank YTD],
+	[Measures].[Sales Rank MTD],
+	[Measures].[Sales Rank QTD],
+	[Measures].[Sales Rank YTD],
+		
+	[Measures].[Growth Rank MTD],
+	[Measures].[Growth Rank QTD],
+	[Measures].[Growth Rank YTD],
+		
+	[Measures].[Natl Growth Rank MTD],
+	[Measures].[Natl Growth Rank QTD],
+	[Measures].[Natl Growth Rank YTD]
+  })
+ON COLUMNS,
+   NonEmpty(
+	filter(
+		DESCENDANTS(
+			STRTOMEMBER(@SalesGeoMemberKey), Levels(@ChildMember)
+		), 
+		[Measures].[Natl Growth Rank YTD])
+	)
+ON ROWS
+FROM [SalesOrders]
+WHERE (
+	//[Date Commissioned].[Calendar Time].[07/18/2016]
+	STRTOMEMBER(@DateKey)
+)

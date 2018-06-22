@@ -1,0 +1,63 @@
+﻿WITH
+MEMBER
+	[PY Commissioned Sales USD] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Commissioned Sales USD]), FORMAT_STRING = "Currency"		
+MEMBER
+	[PY Commissioned Sales TC] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Commissioned Sales TC]), FORMAT_STRING = "Currency"				
+MEMBER 
+	[PY Quantity Invoiced] as
+		(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1), [Measures].[Quantity Invoiced])		
+
+	MEMBER [Measures].[Account Number] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "Location Number" )	
+
+	MEMBER [Measures].[Address] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "AddressLine1" ) + " " + [Ship To Customer Location].[Location].CurrentMember.Properties( "AddressLine2" )
+
+	MEMBER [Measures].[City] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "CITY" )
+		
+	MEMBER [Measures].[State Province] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "State-Province" )	
+		
+	MEMBER [Measures].[Postal Code] as
+		[Ship To Customer Location].[Location].CurrentMember.Properties( "Postal Code" )
+
+SELECT
+{
+	[Measures].[Account Number],
+	[Measures].[Address],
+	[Measures].[City],
+	[Measures].[State Province],
+	[Measures].[Postal Code],
+	[Measures].[Commissioned Sales TC],
+	[Measures].[Commissioned Sales USD],
+	[PY Commissioned Sales TC],
+	[PY Commissioned Sales USD],		
+	[Measures].[YTD Commissioned Sales USD],
+	[Measures].[YTD Commissioned Sales TC],
+	[Measures].[PYTD Commissioned Sales TC],
+	[Measures].[PYTD Commissioned Sales USD],		
+	[Measures].[Quantity Invoiced],
+	[PY Quantity Invoiced]
+} ON COLUMNS,
+//NON EMPTY
+{
+	//([Ship To Customer Location].[Account Name].[All].Children) *
+	NonEmpty(STRTOMEMBER(@CustomerMemberKey).Children, [Ship To Customer Location].[Account Number].Children) *
+	[Ship To Customer Location].[Location].[Location].MEMBERS *
+	//STRTOMEMBER(@DateKey).PrevMember : STRTOMEMBER(@DateKey).Lag(12)
+	STRTOMEMBER(@DateKey).Parent : STRTOMEMBER(@DateKey).Parent.Lag(@TrailingPeriodCount)
+} 
+DIMENSION PROPERTIES 
+MEMBER_UNIQUE_NAME,
+MEMBER_CAPTION
+ON ROWS
+FROM SalesOrders
+where(
+	STRTOMEMBER(@ProductKey),
+	STRTOMEMBER(@SalesGeoMemberKey),
+	STRTOMEMBER(@CapitalDisposableKey),
+	STRTOMEMBER(@DistributorKey)
+)

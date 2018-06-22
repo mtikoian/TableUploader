@@ -1,0 +1,23 @@
+﻿WITH 
+MEMBER [Measures].[AD Name] AS 
+	[Sales Geography].[Sales Geography].CurrentMember.Parent.Parent.Name
+MEMBER [Measures].[Sales Rep] AS 
+	[Sales Geography].[Sales Geography].CurrentMember.Parent.Name
+MEMBER [Measures].[Territory] AS 
+	[Sales Geography].[Sales Geography].CurrentMember.Name
+MEMBER [Measures].[HasSales] AS 
+	[Measures].[Commissioned Sales USD]
+SELECT 
+{
+[Measures].[AD Name],
+[Measures].[Sales Rep], 
+[Measures].[Territory]
+} 
+ON COLUMNS, 
+{ 
+	NonEmpty(
+		DESCENDANTS(
+			STRTOMEMBER(@SalesGeoMemberKey), [Sales Geography].[Sales Geography].[Geography ID]
+		) 
+	)
+} ON ROWS FROM [SalesOrders]

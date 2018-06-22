@@ -1,0 +1,68 @@
+﻿WITH
+	MEMBER [Measures].[Open Order Line Amount TC] AS
+		 ([Measures].[Order Line Amount TC])
+
+	MEMBER [Measures].[Open Order Line Amount USD] AS
+		 ([Measures].[Order Line Amount USD])
+
+      MEMBER [Measures].[Credit Holds USD] AS
+      ([Measures].[Order Line Amount USD], [Hold Status].[Hold Status].&[CREDIT HOLD])
+      MEMBER [Measures].[Credit Holds TC] AS
+      ([Measures].[Order Line Amount TC], [Hold Status].[Hold Status].&[CREDIT HOLD])      
+      MEMBER [Measures].[Back Orders USD] AS
+      ([Measures].[Order Line Amount USD], [Hold Status].[Hold Status].&[BACKORDER])   
+      MEMBER [Measures].[Back Orders TC] AS
+      ([Measures].[Order Line Amount TC], [Hold Status].[Hold Status].&[BACKORDER])        
+      MEMBER [Measures].[Future Orders USD] AS
+      ([Measures].[Order Line Amount USD], [Hold Status].[Hold Status].&[FUTURE ORDER])  
+      MEMBER [Measures].[Future Orders TC] AS
+      ([Measures].[Order Line Amount TC], [Hold Status].[Hold Status].&[FUTURE ORDER])            
+      MEMBER [Measures].[Credit Hold Count] AS
+      ([Measures].[Open Order Count], [Hold Status].[Hold Status].&[CREDIT HOLD])   
+      MEMBER [Measures].[Backorder Count] AS
+      ([Measures].[Open Order Count], [Hold Status].[Hold Status].&[BACKORDER])                
+      MEMBER [Measures].[Future Orders Count] AS
+      ([Measures].[Open Order Count], [Hold Status].[Hold Status].&[FUTURE ORDER])     
+      
+/*member [Measures].[Open Order Line Amount TC] as
+   ( 
+	//([Measures].[Order Line Amount TC], [Commissionable Flag].[Commissionable].&[Yes]) 	
+	 [Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Orders USD]
+   )       
+   
+member [Measures].[Open Order Line Amount USD] as
+   ( 
+	//([Measures].[Order Line Amount USD], [Commissionable Flag].[Commissionable].&[Yes]) 	
+	[Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Orders USD]
+		
+   )  
+*/                       
+SELECT 
+{
+	//[Measures].[Invoiced Sales TC],
+	//[Measures].[Invoiced Sales USD],
+	[Measures].[Commissioned Sales TC],
+	[Measures].[Commissioned Sales USD],
+	[Measures].[MTD Trace Sales TC],
+	[Measures].[MTD Trace Sales USD],
+	//[Measures].[Order Line Amount TC],
+	//[Measures].[Order Line Amount USD],
+	[Measures].[Open Order Line Amount TC],
+	[Measures].[Open Order Line Amount USD],
+	[Measures].[Credit Holds TC],
+	[Measures].[Credit Holds USD],	
+	[Measures].[Back Orders TC],
+	[Measures].[Back Orders USD],	
+	[Measures].[Future Orders TC],
+	[Measures].[Future Orders USD],
+	[Measures].[Open Order Count],
+	[Measures].[Credit Hold Count],
+	[Measures].[Backorder Count],
+	[Measures].[Future Orders Count]
+} ON COLUMNS
+FROM 
+	[SalesOrders]
+WHERE (
+STRTOMEMBER(@SalesGeoMemberKey),
+STRTOMEMBER(@DateKey)
+)

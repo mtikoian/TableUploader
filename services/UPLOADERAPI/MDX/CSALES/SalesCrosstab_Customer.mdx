@@ -1,0 +1,41 @@
+﻿WITH 
+MEMBER [Measures].[PY TC] AS 
+	(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year], 1, [Date Commissioned].[Calendar Time].CurrentMember), [Measures].[Commissioned Sales TC])
+MEMBER [Measures].[YoY TC] AS 
+	[Measures].[Commissioned Sales TC] - [Measures].[PY TC]
+MEMBER [Measures].[YoY% TC] AS 
+	IIF([Measures].[PY TC] <> 0,
+	([Measures].[Commissioned Sales TC] - [Measures].[PY TC]) / [Measures].[PY TC], NULL)
+MEMBER [Measures].[PeriodKey] AS [Date Commissioned].[Calendar Time].CurrentMember.UniqueName
+MEMBER [Measures].[PY USD] AS 
+	(PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year], 1, [Date Commissioned].[Calendar Time].CurrentMember), [Measures].[Commissioned Sales USD])
+MEMBER [Measures].[YoY USD] AS 
+	[Measures].[Commissioned Sales USD] - [Measures].[PY USD]
+MEMBER [Measures].[YoY% USD] AS 
+	IIF([Measures].[PY USD] <> 0,
+	([Measures].[Commissioned Sales USD] - [Measures].[PY USD]) / [Measures].[PY USD], NULL)
+SELECT
+{
+	[Measures].[Commissioned Sales TC],
+	[Measures].[Commissioned Sales USD],
+	[Measures].[PY TC],
+	[Measures].[PY USD],	
+	[Measures].[YoY TC],
+	[Measures].[YoY USD],	
+	[Measures].[YoY% TC],
+	[Measures].[YoY% USD],	
+	[Measures].[Quantity Invoiced]
+} ON 0,
+{
+	(NonEmpty(STRTOSET(@RowMembers), STRTOMEMBER(@ThisYearMeasure)) *
+	STRTOMEMBER(@DateKey).Lag(@TrailingPeriodCount) : STRTOMEMBER(@DateKey).PrevMember,
+	[Ship To Customer Location].[Location Number].Children)
+} ON 1
+FROM 
+	SalesOrders
+WHERE 
+(
+	STRTOMEMBER(@SalesGeoMemberKey),
+	STRTOMEMBER(@ProductKey),
+	STRTOMEMBER(@CapitalDisposableKey)
+)

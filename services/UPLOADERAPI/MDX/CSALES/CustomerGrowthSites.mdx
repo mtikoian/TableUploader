@@ -1,0 +1,40 @@
+﻿SELECT
+{
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[MTD Commissioned Sales USD],
+	[Measures].[MTD Commissioned Sales Growth %],
+	[Measures].[MTD Commissioned Sales Growth % USD],
+	--[Measures].[PQTD Commissioned Sales TC],
+	--[Measures].[PQTD Commissioned Sales USD],
+	--[Measures].[QTD Commissioned Sales Growth %],
+	--[Measures].[QTD Commissioned Sales Growth % USD],
+	[Measures].[YTD Commissioned Sales TC],
+	[Measures].[YTD Commissioned Sales USD],
+	[Measures].[YTD Commissioned Sales Growth %],	
+	[Measures].[YTD Commissioned Sales Growth % USD],	
+	--[Measures].[Last 90 Days Commissioned Sales TC],
+	--[Measures].[Last 90 Days Commissioned Sales USD],
+	--[Measures].[Last 90 Days Commissioned Sales Growth %],	
+	--[Measures].[Last 90 Days Commissioned Sales Growth % USD],
+	[Measures].[QTD Commissioned Sales TC],
+	[Measures].[QTD Commissioned Sales USD],
+	[Measures].[QTD Commissioned Sales Growth %],
+	[Measures].[QTD Commissioned Sales Growth % USD]			
+} ON 0,
+NON EMPTY
+{
+	(
+	[Ship To Customer Location].[Location Name].[All].Children,
+	[Ship To Customer Location].[Location Number].[All].Children
+	)
+} ON 1
+FROM 
+	SalesOrders
+WHERE 
+(
+	STRTOMEMBER(@DateKey),
+	STRTOMEMBER(@SalesGeoMemberKey),  
+	STRTOMEMBER(@CapitalDisposableKey)//,
+	//STRTOMEMBER(@ProductKey)
+)
+

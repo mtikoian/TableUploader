@@ -1,0 +1,50 @@
+﻿
+WITH
+MEMBER [Measures].[HasSales] AS 
+	[Measures].[MTD Commissioned Sales USD] + [Measures].[PMTD Commissioned Sales USD] 
+MEMBER [Measures].[Parent Level] as
+ ([Product].[Conmed Item Hierarchy].CurrentMember.Parent.Name)
+MEMBER [Measures].[Child Level] as
+ ([Product].[Conmed Item Hierarchy].CurrentMember.Name) 
+
+member [Measures].[PMTD Commissioned Sales USD with LeapYear] as
+	(STRTOMEMBER(@DateKey).parent,[Measures].[PMTD Commissioned Sales USD])
+	
+member [Measures].[PMTD Commissioned Sales TC with LeapYear] as
+	(STRTOMEMBER(@DateKey).parent,[Measures].[PMTD Commissioned Sales TC])	
+
+SELECT
+{	
+	[Measures].[Parent Level],
+	[Measures].[Child Level],
+	[Measures].[MTD Commissioned Sales Growth %],	
+	[Measures].[MTD Commissioned Sales Growth % USD],	
+	[Measures].[MTD Commissioned Sales USD],	
+	[Measures].[MTD Commissioned Sales TC],
+	[Measures].[PMTD Commissioned Sales TC],
+	[Measures].[PMTD Commissioned Sales USD],
+	[Measures].[PMTD Commissioned Sales USD with LeapYear],
+	[Measures].[PMTD Commissioned Sales TC with LeapYear]
+} ON COLUMNS,
+NON EMPTY
+{
+    NonEmpty(STRTOSET(@RowMembers),
+		/*DESCENDANTS(
+			[Product].[Conmed Item Hierarchy].[C Item Division],
+			[Product].[Conmed Item Hierarchy].[C Item Major]
+			),
+			*/			
+			 [Measures].[HasSales]
+		)
+} 
+DIMENSION PROPERTIES 
+MEMBER_UNIQUE_NAME,
+MEMBER_CAPTION
+ON ROWS
+FROM [SalesOrders]
+WHERE (
+	STRTOMEMBER(@SalesGeoMemberKey),
+	//STRTOMEMBER(@CapitalDisposableKey),
+	STRTOSET(@CapitalDisposableKey),
+	STRTOMEMBER(@DateKey) //[Date Commissioned].[Calendar Time].[05/04/2016]
+)

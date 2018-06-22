@@ -1,0 +1,530 @@
+﻿body {
+	width: 100%;
+	padding-top: 60px;
+	/*overflow:hidden;*/
+}
+
+#mainDivContent .panel-fullscreen table{
+	font-size: 16px;
+}
+
+#orderLineItemGridObj  .k-grid-header th.k-with-icon .k-link{
+	margin-right:0px !important;
+}
+
+#orderLineItemGridObj .k-grid-header th.k-header>.k-link{
+	padding-right: 0px !important;
+	text-align:left !important;
+}
+
+.k-header>.k-grid-filter, .k-header>.k-header-column-menu{
+	float: left !important;
+}
+
+.k-active-filter, .k-state-active, .k-tabstrip .k-state-active{
+	background-color: red;
+}
+
+/*bug fix to keep kendo grid filter icons space between header labels*/
+.k-link{
+	padding-left: 5px !important;
+}
+
+.k-grid td.k-state-selected:hover, .k-grid tr.k-state-selected:hover{
+	background-color: #00a1d9 !important;
+}
+.k-window-title {
+    background-color: #00a1d9 !important;
+    color: white !important;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 5px;
+}
+
+.h2-header {
+    margin-top: 0;
+    background-color: #00a1d9;
+    color: white;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+}
+
+.k-grid tr:hover{
+	background: none;
+}
+
+.k-group-indicator{
+	background: white !important;
+}
+
+.k-grid-content {
+    
+}
+
+#orderLineItemGridObj .k-grouping-header{
+	background: #00a1d9 !important;
+	color: white !important;
+	border: 1px solid black !important;
+}
+
+#custLineItemGridObj .k-grouping-header{
+	background: #00a1d9 !important;
+	color: white !important;
+	border: 1px solid black !important;
+}
+
+.invalidDate{
+	border-color: red !important;
+
+}
+
+
+#orderLineItemGridObj .k-menu .k-animation-container, .k-popup .k-animation-container {
+	 position:absolute !important; 
+}
+
+
+.k-grid-filter.k-state-active {
+	background-color: #ff5a5a !important;
+}
+
+#dropList .k-textbox>input, .k-autocomplete .k-input, .k-picker-wrap .k-input, .k-numeric-wrap .k-input, .k-dropdown-wrap .k-input, .k-selectbox .k-input{
+
+	height: auto !important;
+}
+
+#rankingsGridId .k-state-selected{
+
+	font-weight:bold;
+}
+
+
+#sidebar .ui-autocomplete
+{
+    /*position:absolute;*/
+    cursor:default;
+    z-index:100000 !important
+}
+
+.k-animation-container{
+	position:fixed !important;
+}
+
+.k-filter-menu .k-animation-container{
+	position:absolute !important;
+}
+
+#cubeDetailGridPanel .k-animation-container{
+	position:absolute !important;
+}
+
+
+#timeframeToggleList .nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover{
+
+background-color:black !important;
+}
+
+#timeframeToggleList a:hover{
+
+background-color:gray !important;
+color:white !important;
+}
+
+#timeframeToggleList .nav .open>a:hover{
+
+background-color:black !important;
+
+}
+
+.productListing{
+	width: 100%;
+}
+
+#prodGrowthTable tr:hover td:not(:last-child){
+  background-color: #00a1d9;
+  color: white;
+  cursor: pointer; 
+}
+
+
+
+
+
+/*.navmenu-fixed-left, .navmenu-fixed-right, .navbar-offcanvas {
+  position: fixed;
+  z-index: 9999;
+  top: 120px;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 0;
+}
+*/
+
+.exportIcon{
+	color:#737373;
+	padding-right:3px;
+	vertical-align:text-top;
+}
+
+/*Increases default navbar slide out from 300 to 350px*/
+.navmenu, .navbar-offcanvas {
+	width: 350px;
+}
+
+#footer {
+	position:fixed;
+	left:0px;
+	bottom:0px;
+	/*height:30px;*/
+	width:100%;
+	text-align: center;
+}
+
+.chart-data-table {
+	width:100%; 
+	/*background-color:#ffdb99;*/
+	font-size: small;
+}
+
+.chart-data-table img {
+	vertical-align: baseline;
+	padding-right: 3px;
+}
+
+@media only screen and (max-width: 1024px) {
+    .chart-data-table {
+		font-size: 11px;
+	}
+	
+	.h2-header {
+		font-size: large;
+	}
+	
+	.chart-data-table tr:nth-child(even) {
+		background-color: #c9ced3;
+	}
+	
+	#footer {
+		position: inherit;
+		margin-top: 50px;
+	}
+}
+
+/* IE 6 */
+* html #footer {
+   position:absolute;
+   top:expression((0-(footer.offsetHeight)+(document.documentElement.clientHeight ? document.documentElement.clientHeight : document.body.clientHeight)+(ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop))+'px');
+}
+
+.center {
+	text-align: center;
+}
+
+.currencyBtn{
+	position:absolute;
+	right:0;
+	margin-top:55px;
+	top:5px;
+	margin-right:15px;
+}
+
+.panel-overlay {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 1000;
+}
+
+.panel-active {
+	border: thin #00334e solid!important;
+	box-shadow: 3px 5px 10px 2px !important;
+}
+
+a {
+	text-decoration: none!important;
+}
+
+.noDataMessage {
+	position: absolute;
+	left: 25%;
+	top: 35%;
+	color: white;
+}
+
+
+.panel-data-table,
+.panel-col-scroll {
+	//overflow-y: auto;
+}
+
+.panel-actions {
+  margin-top: -20px;
+  margin-bottom: 0;
+  text-align: right;
+}
+.panel-actions a {
+  color:#333;
+}
+.panel-fullscreen {
+    display: block;
+    z-index: 9999;
+    position: fixed;
+    width: 100%;
+    height: 100%!important;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+.h2-header {
+	margin-top: 0;
+}
+
+.treeviewMenu {
+	background-image:url('../assets/img/TreeNavIcon.png')!important;
+}
+
+.sidebar {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.daterangepicker.dropdown-menu{
+	z-index: 10000!important;
+}
+
+
+/********** Bootstrap ConMed Branding **********/
+
+.btn-conmed {
+	color: #fff;
+	background-color: #00a1d9;
+	border-color: #fff;
+}
+
+.btn-conmed.active, 
+.btn-conmed:active,
+.btn-conmed:hover,
+.open>.dropdown-toggle.btn-conmed {
+    background-image: none;
+    color: #fff;
+    background-color: #00334e;
+    border-color: #fff;
+}
+
+.panel-conmed {
+	border-color: #00a1d9;
+}
+
+.panel-conmed>.panel-heading {
+	padding: 5px 15px;
+	color: white;
+	background-color: #00a1d9;
+	border-color: #00a1d9;
+}
+
+.panel-conmed>.panel-heading .panel-title {
+	margin-top: 8px;
+}
+
+.dropdown-menu>.active>a, .dropdown-menu>.active>a:focus, .dropdown-menu>.active>a:hover {
+    background-color: #00a1d9;
+}
+
+
+/********** Bootstrap Styling **********/
+.container-fluid>.navbar-collapse, .container-fluid>.navbar-header, .container>.navbar-collapse, .container>.navbar-header {
+    margin-left: -15px!important;
+}
+
+.navbar, .navbar-default, .navbar-fixed-top{
+	background-color: #f8f8f8 !important;
+	border: 1px solid #e7e7e7 !important;
+}
+
+.navbar-fixed-top {
+	width: 100%!important;
+}
+
+
+/********** Kendo Styling **********/
+
+/**Force excel export grid button to the right of grid toolbar**/
+.k-grid-excel{
+	float: right;
+}
+
+.k-button:active{
+	color: white !important;
+	background-color: #00334e !important;
+}
+
+.k-chart {
+	height: 100%;
+}
+
+.k-state-selected, .k-state-selected:link, 
+.k-state-selected:visited, .k-list>.k-state-selected, 
+.k-list>.k-state-highlight, .k-panel>.k-state-selected, 
+.k-ghost-splitbar-vertical, .k-ghost-splitbar-horizontal, 
+.k-draghandle.k-state-selected:hover, .k-scheduler .k-scheduler-toolbar 
+.k-state-selected, .k-scheduler .k-today.k-state-selected, .k-marquee-color {
+	background-color: #00a1d9;
+	border-color: #00a1d9;
+}
+
+@media only screen and (max-width: 1024px) {
+	.k-treeview {
+		font-size: large;
+	}
+	
+	.navmenu, .navbar-offcanvas {
+		width: 18em;
+	}
+	
+}
+
+/**Media tag to hide text of toolbar buttons for Portrait Tablets**/
+@media only screen and  (max-width:1000px) and (min-width:760px) {
+	/*Hides all text from toolbar nav*/
+	#mainNav a:not(.glyphicon){
+		font-size: 0
+	}
+
+	/*Keeps the export Glypicon visible*/
+	#mainNav .glyphicon{
+		font-size: large;
+	}
+	
+	/*Keeps the drop down of customer text visible*/
+	.dropdown-menu>li>a{
+		font-size: medium !important;
+	}
+	
+}
+
+	
+
+	/*.k-icon, .k-tool-icon, .k-grouping-dropclue, .k-drop-hint, .k-column-menu .k-sprite, .k-grid-mobile .k-resize-handle-inner:before, .k-grid-mobile .k-resize-handle-inner:after, .k-pager-numbers .k-current-page .k-link:after, .k-scheduler-toolbar>ul.k-scheduler-views>li.k-current-view>.k-link:after, .k-gantt-views>.k-current-view>.k-link:after {
+	    background-image: url('../assets/libs/Default/sprite_2x.png')!important;
+	}
+	
+	.k-icon, .k-sprite, .k-button-group .k-tool-icon {
+	    width: 32px!important;
+	    height: 32px!important;
+	}
+	
+	.k-i-collapse,.k-minus,.k-minus-disabled {
+		background-position:0 -448px!important;
+	}
+	
+	.k-i-expand,.k-plus,.k-plus-disabled {
+		background-position:0 -384px!important;
+	}*/
+}
+
+@media only screen and (min-width: 410px) {
+	.navmenu, .navbar-offcanvas {
+		width: 25em;
+	}
+}
+
+
+.k-treemap-title {
+	display: none;
+}
+
+.k-treemap{
+	font-size:smaller;
+}
+
+#custGrowthGridID table tr:hover td {
+	background : #00a1d9 !important;
+	cursor: pointer !important;
+	color: white !important;
+}
+
+#prodCustDetailGridObj .k-grid-content-locked tr:hover td {
+	background : #00a1d9 !important;
+	cursor: pointer !important;
+	color: white !important;	
+}
+
+
+#columnPanel .k-multiselect-wrap li {
+	height: 45px  !important;
+	width: 110px !important;
+}
+
+/**Force grid filter icons to be on the left of column headings**/
+.k-grid-filter {
+float: left !important;
+}
+
+/**Kendo Autocomplete styling**/
+.k-list-container{
+	background-color: whitesmoke;
+}
+
+#custList_listbox .k-state-hover{
+	background-color:  #00a1d9 !important;
+	color: white !important;
+}
+
+.k-autocomplete .k-input{
+	font-size: large !important;
+	color: black !important;
+}
+
+/********** Product Growth Customer Grid Styling **********/
+
+
+/*Handle x-oveflow of tree nodes*/
+.k-widget k-treeview {
+	overflow-x: hidden;
+}
+
+
+/*Handles wrap of tree node text*/
+span.k-in{
+	white-space:pre-wrap;
+}
+
+
+/* Hide Grid Styling for Customer Growth */
+.k-grid, .k-grid * {
+    border: 0 !important;
+}
+
+.k-header {
+    background: transparent !important;
+	font-weight: bold !important;
+}
+
+
+.k-grid-header {
+	background: transparent !important;
+    padding-right: 0 !important;
+}
+
+.k-grid-content, .k-header-content
+{
+	overflow-y: visible;
+}
+
+@media only screen and (max-width: 767px) {
+  #AsOfDateLabel{
+		display:inline !important;
+	}
+} 
+
+
+
+/********************** Animations ***************************/

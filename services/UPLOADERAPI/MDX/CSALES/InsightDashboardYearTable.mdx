@@ -1,0 +1,267 @@
+﻿with
+
+	/* QTD */
+	member z_qtd as sum(
+		qtd( [Date Commissioned].[Calendar Time].CurrentMember) ,[Measures].[Quota TC]) 
+
+	member z_mtd as sum( mtd( [Date Commissioned].[Calendar Time].CurrentMember) ,[Measures].[Quota TC]) 
+
+	member [Measures].[QTD Current Month Quota] as 
+	   z_qtd - z_mtd + [MTD Quota TC]
+
+	/* YTD */
+	member z_ytd as sum(
+		ytd( [Date Commissioned].[Calendar Time].CurrentMember) ,[Measures].[Quota TC]) 
+
+	member [Measures].[YTD Current Month Quota] as 
+	   z_ytd - z_mtd + [MTD Quota TC]
+
+
+	MEMBER [Measures].[CY Disposable USD] AS
+		(([Measures].[YTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[DISPOSABLE]) +
+		([Measures].[YTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[Unassigned]))      
+		 
+
+	MEMBER [Measures].[PY Disposable USD] AS
+		(([Measures].[PYTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[DISPOSABLE]) +
+		([Measures].[PYTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[Unassigned]))
+
+	MEMBER [Measures].[Disp Growth USD] AS
+		([Measures].[CY Disposable USD] - [Measures].[PY Disposable USD]  )  / [Measures].[PY Disposable USD]  
+
+	MEMBER [Measures].[CY Disposable TC] AS
+		(([Measures].[YTD Commissioned Sales TC], [Product].[US Comm Capital or Disposable].&[DISPOSABLE]) +
+		([Measures].[YTD Commissioned Sales TC], [Product].[US Comm Capital or Disposable].&[Unassigned]))
+
+	MEMBER [Measures].[PY Disposable TC] AS
+		(([Measures].[PYTD Commissioned Sales TC], [Product].[US Comm Capital or Disposable].&[DISPOSABLE]) +
+		([Measures].[PYTD Commissioned Sales TC], [Product].[US Comm Capital or Disposable].&[Unassigned]))
+
+	MEMBER [Measures].[Disp Growth TC] AS
+		([Measures].[CY Disposable TC] - [Measures].[PY Disposable TC]  )  / [Measures].[PY Disposable TC]  		
+
+	MEMBER [Measures].[Cap Growth TC] AS
+		([Measures].[CY Capital TC] - [Measures].[PY Capital TC]  )  / [Measures].[PY Capital TC]  
+
+	MEMBER [Measures].[CY Capital TC] AS
+		([Measures].[YTD Commissioned Sales TC], [Product].[US Comm Capital or Disposable].&[CAPITAL])
+
+	MEMBER [Measures].[PY Capital TC] AS
+		([Measures].[PYTD Commissioned Sales TC], [Product].[US Comm Capital or Disposable].&[CAPITAL])
+		
+		
+		
+	MEMBER [Measures].[Cap Growth USD] AS
+		([Measures].[CY Capital USD] - [Measures].[PY Capital USD]  )  / [Measures].[PY Capital USD]  
+
+	MEMBER [Measures].[CY Capital USD] AS
+		([Measures].[YTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[CAPITAL])
+
+	MEMBER [Measures].[PY Capital USD] AS
+		([Measures].[PYTD Commissioned Sales USD], [Product].[US Comm Capital or Disposable].&[CAPITAL])		
+		
+
+	member [Measures].[Open Order Line Amount TC] as
+	   ( 
+		 [Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Orders USD]
+	   )    
+   
+	member [Measures].[QTR Open Order Line Amount TC] as
+	   ( 
+		([Measures].[Order Line Amount TC], [Commissionable Flag].[Commissionable].&[Yes]) 	
+	   )        
+   
+	member [Measures].[Open Order Line Amount USD] as
+	   ( 
+		[Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Orders USD]			
+	   )   	      
+	   
+
+	member [Measures].[Total Sales YTD TC] as
+	(
+		[Measures].[YTD Commissioned Sales TC] + [Measures].[YTD Net Open Orders] // + [Measures].[Comm Net Open Order USD QTR] - [Measures].[Prior Year Last Month ME OO]
+	)	 	 
+	
+	member [Measures].[Total Sales YTD USD] as
+	(
+		[Measures].[YTD Commissioned Sales USD] + [Measures].[YTD Net Open Orders] // + [Measures].[Comm Net Open Order USD QTR] - [Measures].[Prior Year Last Month ME OO]
+	)	
+	
+
+
+/*	member [Measures].[Total Sales YTD TC] as
+	(
+		[Measures].[YTD Commissioned Sales TC] + [x]
+	)	 	 
+	
+	member [Measures].[Total Sales YTD USD] as
+	(
+		[Measures].[YTD Commissioned Sales USD] + [x] // -  [Measures].[Prior Year Last Month ME OO]
+	)	
+	
+	member [Measures].[x] as
+	(
+		[Date Commissioned].[Calendar Time].CurrentMember.Parent.Parent.Parent, [Measures].[Commissioned Net Open Orders USD]
+	)  
+*/
+	
+	
+	member [Measures].[QTD Comm Sales TC] as
+	(
+		[Measures].[QTD Commissioned Sales TC] + [Measures].[QTD Net Open Orders]
+	)	 	 
+	
+	member [Measures].[QTD Comm Sales USD] as
+	(
+		[Measures].[QTD Commissioned Sales USD] + [Measures].[QTD Net Open Orders] // -  [Measures].[Prior Year Last Month ME OO]
+	)		
+	
+	
+	
+	
+	member [Measures].[y] as
+	(
+		[Date Commissioned].[Calendar Time].CurrentMember.Parent.Parent, [Measures].[Commissioned Net Open Orders USD]
+	)  	
+
+	
+	member [Measures].[YTD PTQ] as
+		([Measures].[Total Sales YTD USD] / [Measures].[YTD Current Month Quota]) * 100
+	
+	
+	member [Measures].[Prior Year End OO TC] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent.Parent.Parent)
+			, [Measures].[ME Order Amount], [Commissionable Flag].[Commissionable].&[Yes]
+		)		
+	
+	member [Measures].[Total Sales QTD TC] as
+	(
+		[Measures].[QTD Commissioned Sales TC] + [Measures].[Comm Net Open Order USD]
+	)			  
+   		
+	member [Measures].[Total Sales QTD USD] as
+	(
+		[Measures].[QTD Commissioned Sales USD] + [Measures].[Comm Net Open Order USD]
+	)			  
+   		
+   		
+	member [Measures].[Total Sales QTD OverUnder TC] as
+	(
+		IIF(isEmpty([Measures].[QTD Quota TC]), 0,
+			[Measures].[Total Sales QTD TC] - [Measures].[QTD Quota TC]
+		)	
+	)	   
+	
+	member [Measures].[Total Sales YTD OverUnder TC] as
+	(
+		IIF(isEmpty([Measures].[YTD Quota TC]), 0,
+			[Measures].[Total Sales YTD TC] - [Measures].[YTD Quota TC]
+		)
+	)	 
+	
+	
+	member [Measures].[Total Sales YTD OverUnder USD] as
+	(
+		IIF(isEmpty([Measures].[YTD Quota TC]), 0,
+			[Measures].[Total Sales YTD USD] - [Measures].[YTD Quota TC]
+		)
+	)	
+	
+	MEMBER [Measures].[Calc Open] AS
+	([Date Commissioned].[Calendar Time].CurrentMember.Parent.Parent,[Measures].[Commissioned Open Orders USD],[Commissionable Flag].[Commissionable].&[Yes]) - [Measures].[Comm Net Open Order USD] - [Measures].[Comm Net Open Order USD]		
+	 		     
+             	
+	/*member [QTD Comm Sales TC] as
+	(
+		[Measures].[QTD Commissioned Sales TC] + [Measures].[Comm Net Open Order USD QTR] - [Measures].[Prior Quarter Last Month ME OO]
+	)			
+	
+		
+	member [QTD Comm Sales USD] as
+		[Measures].[QTD Commissioned Sales USD] + [Measures].[Comm Net Open Order USD QTR] - [Measures].[Prior Quarter Last Month ME OO]	
+	*/	
+	member [Measures].[QTD PTQ] as
+		IIF(isEmpty([Measures].[QTD Quota TC]), 0,
+			[QTD Comm Sales TC] / [Measures].[QTD Quota TC]
+		)	
+		
+	member [Measures].[QTD +/- To Quota] as
+
+		IIF(isEmpty([Measures].[QTD Quota TC]), 0,
+			[QTD Comm Sales TC] - [Measures].[QTD Quota TC]	
+		)	
+		
+	member [Measures].[QTD +/- To Quota USD] as
+
+		IIF(isEmpty([Measures].[QTD Quota TC]), 0,
+			[QTD Comm Sales USD] - [Measures].[QTD Quota TC]	
+		)		
+			
+	member [Measures].[Prior Quarter Last Month ME OO] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Quarter],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent.Parent.LastChild)
+			, [Measures].[Commissioned Open Orders USD], [Commissionable Flag].[Commissionable].&[Yes]
+		)	
+		
+	member [Measures].[Prior Year Last Month ME OO] as
+		(
+			PARALLELPERIOD([Date Commissioned].[Calendar Time].[Year],1, [Date Commissioned].[Calendar Time].CurrentMember.Parent.Parent.Parent.LastChild)
+			, [Measures].[Commissioned Open Orders USD], [Commissionable Flag].[Commissionable].&[Yes]
+		)			
+						
+	member [Measures].[Comm Net Open Order USD]  as
+            ([Date Commissioned].[Calendar Time].NextMember, [Measures].[Commissioned Net Open Orders USD])  	
+            
+    member [Measures].[Comm Net Open Order USD QTR] as
+            ([Date Commissioned].[Calendar Time].CurrentMember.Parent, [Measures].[Commissioned Open Orders USD])    
+            
+    member [Measures].[YTD Net Open Orders] as
+		sum(YTD([Date Commissioned].[Calendar Time].CurrentMember),[Measures].[Commissioned Net Open Orders USD])
+             
+
+    member [Measures].[QTD Net Open Orders] as
+		sum(QTD([Date Commissioned].[Calendar Time].CurrentMember),[Measures].[Commissioned Net Open Orders USD])
+                          
+                   
+        	 			
+SELECT {
+	[Measures].[YTD Current Month Quota] ,
+	[Measures].[QTD Current Month Quota],
+	[Measures].[Total Sales YTD TC],
+	[Measures].[Total Sales YTD USD],
+	[Measures].[Disp Growth USD],
+	[Measures].[Disp Growth TC],
+	[Measures].[YTD Commissioned Sales TC],
+	[Measures].[YTD Commissioned Sales USD],
+	[Measures].[YTD Quota TC],
+	[Measures].[YTD PTQ],
+	[Measures].[YTD Commissioned Sales Growth %],
+	[Measures].[YTD Commissioned Sales Growth % USD],
+	[Measures].[YTD Capital % of Sales],
+	[Measures].[YTD Capital Sales Growth %],
+	[Measures].[YTD Disposable % of Sales],
+	[Measures].[Cap Growth TC],
+	[Measures].[Cap Growth USD],
+	[Measures].[QTD Commissioned Sales TC],
+	[Measures].[QTD Commissioned Sales USD],
+	[Measures].[QTD PTQ],
+	//[Measures].[Total Sales QTD TC],
+	//[Measures].[Total Sales QTD USD],
+	//[Measures].[Total Sales QTD OverUnder TC],
+	[Measures].[Total Sales YTD OverUnder TC],
+	[Measures].[Total Sales YTD OverUnder USD],
+	//[Measures].[QTD Quota TC],
+	[QTD Comm Sales USD],
+	[QTD Comm Sales TC],
+	[Measures].[QTD Quota TC],
+	[Measures].[QTD PTQ],
+	[Measures].[QTD +/- To Quota],
+	[Measures].[QTD +/- To Quota USD]		
+} ON COLUMNS
+FROM SalesOrders
+WHERE 
+(
+STRTOMEMBER(@SalesGeoMemberKey),
+STRTOMEMBER(@DateKey)
+)
