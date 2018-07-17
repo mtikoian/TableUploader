@@ -22,12 +22,14 @@ using System.Text;
 using System.Data.OleDb;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using System.Collections;
 
 
 namespace QuotaAPI.Controllers
 {
     public class UploadController : ApiController
     {
+
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger
     (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -74,18 +76,23 @@ namespace QuotaAPI.Controllers
                 return BadRequest("Invalid or missing json request");
             }
 
-
             Table table = new Table();
             string query;
             DataTable dataTable = new DataTable();
+            var newFile = "";
 
+            //find out if sql or oracle
+            //bool sql = IsSQLTable(username, tableName);
+            bool sql = true;//only doing sql for now
 
-            try
+            if (sql == true)
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                try
                 {
-                    conn.Open();
-                    query = "SELECT * FROM " + tableName;
+                    using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                    {
+                        conn.Open();
+                        query = "SELECT * FROM " + tableName;
 
                         using (SqlCommand cmd = new SqlCommand(query, conn))
                         {
@@ -96,17 +103,82 @@ namespace QuotaAPI.Controllers
                             da.Dispose();
                         }
 
-                        var newFile = ExcelExport(dataTable, username);
+                        newFile = ExcelExport(dataTable, username);
 
+                        Log logRecord = new Log();
+                        logRecord.username = username;
+                        logRecord.logDate = DateTime.Now;
+                        logRecord.logText = "Downloaded " + tableName;
+
+                        try
+                        {
+                            insertLog(logRecord);
+                        }
+                        catch (Exception ex)
+                        {
+                        }
 
                         return Ok(newFile);
-                        
+
                     }
                 }
-            catch (Exception ex)
+                catch (Exception ex)
+                {
+                    log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                    Log logRecord = new Log();
+                    logRecord.username = username;
+                    logRecord.logDate = DateTime.Now;
+                    logRecord.logText = "Error in GetTableFromName " + tableName + " error: " + ex;
+
+                    try
+                    {
+                        insertLog(logRecord);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    return InternalServerError(ex);
+                }
+            }
+            else
             {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                return InternalServerError(ex);
+                try
+                {
+                    using (OracleConnection conn = new OracleConnection(ConfigurationManager.ConnectionStrings["OracleContext"].ConnectionString))
+                    {
+                        conn.Open();
+                        query = "SELECT * FROM " + tableName;
+
+                        using (OracleCommand cmd = new OracleCommand(query, conn))
+                        {
+                            OracleDataAdapter da = new OracleDataAdapter(cmd);
+                            da.Fill(dataTable);
+                            conn.Close();
+                            da.Dispose();
+                        }
+                        newFile = ExcelExport(dataTable, username);
+                        return Ok(newFile);
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                    Log logRecord = new Log();
+                    logRecord.username = username;
+                    logRecord.logDate = DateTime.Now;
+                    logRecord.logText = "Error in GetTableFromName " + tableName + " error: " + ex;
+
+                    try
+                    {
+                        insertLog(logRecord);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    return InternalServerError(ex);
+                }
+
             }
 
         }
@@ -158,7 +230,7 @@ namespace QuotaAPI.Controllers
                                 t.id = reader["id"] != null ? reader["id"].ToString() : "";
                                 t.name = reader["name"] != null ? reader["name"].ToString() : "";
                                 t.description = reader["description"] != null ? reader["description"].ToString() : "";
-
+                                t.type = reader["type"] != null ? reader["type"].ToString() : "";
                                 if (reader["source"].ToString().Length > 0)
                                 {
                                     var a = reader["source"] != null ? reader["source"].ToString() : "";
@@ -177,289 +249,25 @@ namespace QuotaAPI.Controllers
             catch (Exception ex)
             {
                 log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Error in GetTablesByUser " + " error: " + ex;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception)
+                {
+                }
                 return InternalServerError(ex);
             }
 
         }
-      
-
-        [HttpPost]
-        public IHttpActionResult UpdateUploads([FromBody]User jsonData)
-        {
-            if (jsonData == null)
-            {
-                return BadRequest("Invalid or missing json request");
-            }
-
-            //var strDate = String.Format("YYYY-MM-DD", jsonData.quotaDate);
-            DateTime date = new DateTime();
-
-            date = Convert.ToDateTime(jsonData.quotaDate);
-
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
-                {
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = "[Application].[dbo].[QMUpdateUploads]";
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-                        cmd.Parameters.Add("@parentId", System.Data.SqlDbType.VarChar).Value = jsonData.parentId;
-                        cmd.Parameters.Add("@id", System.Data.SqlDbType.VarChar).Value = jsonData.territoryId;
-                        cmd.Parameters.Add("@date", System.Data.SqlDbType.VarChar).Value = date;
-                        cmd.Parameters.Add("@capitalQuota", System.Data.SqlDbType.VarChar).Value = jsonData.capital;
-                        cmd.Parameters.Add("@disposableQuota", System.Data.SqlDbType.VarChar).Value = jsonData.disposable;
-                        cmd.Parameters.Add("@tissueQuota", System.Data.SqlDbType.VarChar).Value = jsonData.tissue;
-                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = jsonData.username;
-
-                        try
-                        {
-                            conn.Open();
-                            var rows = cmd.ExecuteNonQuery();
-
-                            conn.Close();
-                            return Ok(rows.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            return InternalServerError(ex);
-                        }
-
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                return InternalServerError(ex);
-            }
-
-        }
-
-        /*************************************************************************************************
-
-             Method:         Upload Quotas
-             Description:    Uploads the quotas
-
-             Endpoint:       (POST) /api/quota/InsertQuotaUpload
-
-             Parameters:
-                             { 
-                                 "id" : "C200"
-                             }
-
-          *************************************************************************************************/
-        [HttpPost]
-        public IHttpActionResult InsertQuotaUpload([FromBody]User jsonData)
-        {
-            //need to send jsonData from newData kendo datasource on submit
-            if (jsonData == null)
-            {
-                return BadRequest("Invalid or missing json request");
-            }
-
-            ClearUploads(jsonData.username);
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
-                {
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = "[Application].[dbo].[QMQuotaUpload]";
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = jsonData.username;
-                        cmd.Parameters.Add("@date", System.Data.SqlDbType.VarChar).Value = jsonData.quotaDate;
-                        cmd.Parameters.Add("@capitalQuota", System.Data.SqlDbType.VarChar).Value = jsonData.capital;
-                        cmd.Parameters.Add("@disposableQuota", System.Data.SqlDbType.VarChar).Value = jsonData.disposable;
-                        cmd.Parameters.Add("@tissueQuota", System.Data.SqlDbType.VarChar).Value = jsonData.tissue;
-                        cmd.Parameters.Add("@id", System.Data.SqlDbType.VarChar).Value = jsonData.territoryId;
-                        cmd.Parameters.Add("@geogId", System.Data.SqlDbType.VarChar).Value = jsonData.territoryId;
-                        cmd.Parameters.Add("@currencyCode", System.Data.SqlDbType.VarChar).Value = jsonData.currencyCode;
-
-
-                        try
-                        {
-                            conn.Open();
-                            var rows = cmd.ExecuteNonQuery();
-
-                            conn.Close();
-                            return Ok(rows.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            return InternalServerError(ex);
-                        }
-
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                return InternalServerError(ex);
-            }
-
-        }
-
-        [HttpPost]
-        public IHttpActionResult SubmitQuotasToUpload(string username)
-        {
-            //need to send jsonData from newData kendo datasource on submit
-            if (username == null)
-            {
-                return BadRequest("Invalid or missing json request");
-            }
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
-                {
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = "[Application].[dbo].[QMInsertQuotasFromUpload]";
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
-
-                        try
-                        {
-                            conn.Open();
-                            var rows = cmd.ExecuteNonQuery();
-
-                            conn.Close();
-                            return Ok(rows.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            return InternalServerError(ex);
-                        }
-
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                return InternalServerError(ex);
-            }
-
-        }
-
-        private void ClearUploads(string username)
-        {
-            //call SP to clear uploads
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
-                {
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = "[Application].[dbo].[QMClearUploadTbl]";
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
-
-                        try
-                        {
-                            conn.Open();
-                            var rows = cmd.ExecuteNonQuery();
-
-                            conn.Close();
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-            }
-
-        }
-
         
-
-        /*************************************************************************************************
-
-              Method:         Get Quota For Id
-              Description:    Returns children of the product tree hierarchy by user selection. Node sent in, children returned
-
-              Endpoint:       (POST) /api/quota/GetQuotas
-
-              Parameters:
-                              { 
-                                  "id" : "584"
-                              }
-
-           *************************************************************************************************/
-        [HttpGet]
-        public IHttpActionResult GetQuotas(string id)
-        {
-            if (id == null)
-            {
-                return BadRequest("Invalid or missing json request");
-            }
-
-
-            List<Table> tables = new List<Table>();
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
-                {
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        cmd.Connection = conn;
-                        cmd.CommandText = "[Application].[dbo].[UPGetTables]";
-                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-
-                        conn.Open();
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                Table t = new Table();
-
-                                t.id= reader["id"] != null ? reader["id"].ToString() : "";
-                                t.name = reader["name"] != null ? reader["name"].ToString() : "";
-                                t.description = reader["description"] != null ? reader["description"].ToString() : "";
-                                t.source = reader["source"] != null ? reader["source"].ToString() : "";
-                                tables.Add(t);
-
-                            }
-                        }
-                        return Ok(tables);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                return InternalServerError(ex);
-            }
-
-        }
-
-        
-
         public string ExcelExport(DataTable dt, string username)
         {
-
-
             //var filename = GenerateRandomString(8) + ".xlsx";
             var filename = username + ".xlsx";
             var filePath = System.Web.Configuration.WebConfigurationManager.AppSettings["ExportDirectory"];
@@ -471,6 +279,17 @@ namespace QuotaAPI.Controllers
 
             OfficeOpenXml.ExcelPackage excel = new OfficeOpenXml.ExcelPackage();
             var workSheet = excel.Workbook.Worksheets.Add("Sheet1");
+
+            workSheet.Cells.LoadFromDataTable(dt, true);
+            var dPos = new List<int>();
+            for (var i = 0; i < dt.Columns.Count; i++)
+                if (dt.Columns[i].DataType.Name.Contains("Date"))
+                    dPos.Add(i);
+            foreach (var pos in dPos)
+            {
+                workSheet.Column(pos + 1).Style.Numberformat.Format = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
+            }
+
 
             workSheet.Cells[1, 1].LoadFromDataTable(dt, true);
 
@@ -528,60 +347,8 @@ namespace QuotaAPI.Controllers
             return randomString;
         }
 
-        
-        [HttpGet]
-        public List<User> GetNewQuotas(string username)
+        public static void insertLog(Log logRecord)
         {
-            var filename = username + ".xlsx";
-            //var filePath = System.Web.Configuration.WebConfigurationManager.AppSettings["ImportDirectory"];
-            var filePath = HttpContext.Current.Server.MapPath("~/ImportTemplates/");
-            var excelFile = filePath + filename;
-            DataSet dsQuotas = new DataSet();
-            FileInfo fi = new FileInfo(excelFile);
-            List<User> quotas = new List<User>();
-
-            using (ExcelPackage xlPackage = new ExcelPackage(fi))
-            {
-                ExcelWorksheet worksheet = xlPackage.Workbook.Worksheets[1];
-                ExcelCellAddress startCell = worksheet.Dimension.Start;
-                ExcelCellAddress endCell = worksheet.Dimension.End;
-                for (int row = startCell.Row + 1; row <= endCell.Row; row++)
-                {
-                    if (worksheet.Cells[row, 1].Value == null)
-                    {
-                        break;
-                    }
-                    
-                    User newQuota = new User()
-                    {
-                        parentDesc = worksheet.Cells[row, 1].Value.ToString(),
-                        parentId = worksheet.Cells[row, 2].Value.ToString(),
-                        territoryDesc = worksheet.Cells[row, 3].Value.ToString(),
-                        territoryId = worksheet.Cells[row, 4].Value.ToString(),
-                        quotaDate = worksheet.Cells[row, 5].Value.ToString(),
-                        capital = worksheet.Cells[row, 6].Value.ToString(),
-                        disposable = worksheet.Cells[row, 7].Value.ToString(),
-                        tissue = worksheet.Cells[row, 8].Value.ToString(),
-                        
-                    };
-                    quotas.Add(newQuota);
-                }
-            }
-
-            return quotas;
-        }
-
-        [HttpGet]
-        public IHttpActionResult GetUploads(string username)
-        {
-            if (username == null)
-            {
-                return BadRequest("Invalid or missing json request");
-            }
-
-
-            List<User> uploads = new List<User>();
-
             try
             {
                 using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
@@ -589,50 +356,61 @@ namespace QuotaAPI.Controllers
                     using (SqlCommand cmd = new SqlCommand())
                     {
                         cmd.Connection = conn;
-                        cmd.CommandText = "[Application].[dbo].[QMGetUploads]";
+                        cmd.CommandText = "[Application].[dbo].[UPInsertLog]";
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
+                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = logRecord.username;
+                        cmd.Parameters.Add("@logdate", System.Data.SqlDbType.VarChar).Value = logRecord.logDate;
+                        cmd.Parameters.Add("@logText", System.Data.SqlDbType.VarChar).Value = logRecord.logText;
 
-                        conn.Open();
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        try
                         {
-                            while (reader.Read())
-                            {
-                                User q = new User();
+                            conn.Open();
+                            cmd.ExecuteNonQuery();
 
-                                if (reader["QUOTA_DATE"].ToString().Length > 0)
-                                {
-                                    var formattedDate = Convert.ToDateTime(reader["QUOTA_DATE"]);
-                                    q.sortDate = formattedDate;
-                                    q.quotaDate = formattedDate.ToString("MMMM-yyyy");
-                                }
-                                //q.id = reader["QUOTA_DATE"].ToString() + reader["TERRITORY_ID"].ToString();  
-                                q.parentId = reader["PARENT_ID"] != null ? reader["PARENT_ID"].ToString() : "";
-                                q.parentDesc = reader["PARENT_DESC"] != null ? reader["PARENT_DESC"].ToString() : "";
-                                q.territoryId = reader["TERRITORY_ID"] != null ? reader["TERRITORY_ID"].ToString() : "";
-                                q.territoryDesc = reader["TERRITORY_DESC"] != null ? reader["TERRITORY_DESC"].ToString() : "";
-                                q.capital = reader["CAPITAL"] != null ? reader["CAPITAL"].ToString() : "";
-                                q.disposable = reader["DISPOSABLE"] != null ? reader["DISPOSABLE"].ToString() : "";
-                                q.tissue = reader["TISSUE"] != null ? reader["TISSUE"].ToString() : "";
-                                uploads.Add(q);
-                            }
+                            conn.Close();
                         }
-                        var sortedUploads = uploads.OrderBy(a => a.parentId).ThenBy(a => a.territoryDesc).ThenBy(a => a.sortDate);
-                        return Ok(sortedUploads);
+                        catch (Exception ex)
+                        {
+                        }
+
                     }
                 }
             }
             catch (Exception ex)
             {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                return InternalServerError(ex);
             }
 
         }
 
-        public static DataTable ImportToDataTable(string FilePath)
+        public static DateTime? CleanDateField(string DateField)
+        {
+            // Convert the text to DateTime and return the value or null
+            DateTime? CleanDate = new DateTime();
+            int intDate;
+            bool DateIsInt = int.TryParse(DateField, out intDate);
+            if (DateIsInt)
+            {
+                // If this is a serial date, convert it
+                CleanDate = DateTime.FromOADate(intDate);
+            }
+            else if (DateField.Length != 0 && DateField != "" &&
+                DateField != null)
+            {
+                // Convert from a General format
+                CleanDate = (Convert.ToDateTime(DateField));
+            }
+            else
+            {
+                // Date is blank
+                CleanDate = null;
+            }
+            return CleanDate;
+        }
+
+        
+
+        public static DataTable ImportToDataTable(string FilePath, string username)
         {
             DataTable dt = new DataTable();
             FileInfo fi = new FileInfo(FilePath);
@@ -645,6 +423,9 @@ namespace QuotaAPI.Controllers
             {
                 // get the first worksheet in the workbook
                 ExcelWorksheet worksheet = xlPackage.Workbook.Worksheets["Sheet1"];
+                
+                //when going from excel to dt keep date format currently it changes to 47xxx
+
 
                 // Fetch the WorkSheet size
                 ExcelCellAddress startCell = worksheet.Dimension.Start;
@@ -654,79 +435,307 @@ namespace QuotaAPI.Controllers
                 for (int col = startCell.Column; col <= endCell.Column; col++)
                     dt.Columns.Add(col.ToString());
 
+
+                bool firstRow = true;
+                var numberOfRows = 0;
                 // place all the data into DataTable
+
+                //numcol
                 for (int row = startCell.Row; row <= endCell.Row; row++)
                 {
-                    DataRow dr = dt.NewRow();
-                    int x = 0;
-                    for (int col = startCell.Column; col <= endCell.Column; col++)
+                    if (!firstRow)
                     {
-                        dr[x++] = worksheet.Cells[row, col].Value;
+                        numberOfRows++;
+                        DataRow dr = dt.NewRow();
+                        int x = 0;
+                        for (int col = startCell.Column; col <= endCell.Column; col++)//end is less or equal numcol
+                        {
+                            dr[x++] = worksheet.Cells[row, col].Value;
+                        }
+                        dt.Rows.Add(dr);
                     }
-                    dt.Rows.Add(dr);
+                    else {
+                        firstRow = false;
+                        //how many does it see how many with header change end to 
+                        //numcol how many header not not null
+                    }
+                    
+                    
+                    //dt.Rows[0].Delete();
+                    //dt.AcceptChanges();
+                }
+
+                
+
+
+                //log number of rows - user, date text -
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Attempting to Insert " + numberOfRows + " rows into datatable from " + FilePath;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception ex)
+                {
                 }
             }
             return dt;
         }
+        
 
-        public void ImportDataFromExcel(string excelFilePath, string tableName)
+
+        public bool ImportDataFromExcel(string excelFilePath, string tableName, string username)
         {
-            bool sql = true;
   
             var dt = new DataTable();
-            dt = ImportToDataTable(excelFilePath);
+            dt = ImportToDataTable(excelFilePath, username);
             string ssqltable = tableName;
+            string deleteQuery = "delete from " + ssqltable;
 
-            if (sql == false)
+
+            /*test data
+            DataTable table = new DataTable();
+            table.Columns.Add("userName", typeof(string));
+            table.Columns.Add("date", typeof(DateTime));
+            table.Columns.Add("text", typeof(string));
+            table.Rows.Add("sbrown", "2018/06/28", "Downloaded application.dbo.uploader_log");
+            table.Rows.Add("2", DateTime.Now, "test");*/
+
+            //bool sql = IsSQLTable(username, tableName);
+            bool sql = true;//only doing sql for now
+            var source = "";
+            var rows = "";
+            var name = tableName.Split('.').Last();
+            
+
+            if (sql == true)
+
+
             {
 
-                using (OracleConnection conn = new OracleConnection(ConfigurationManager.ConnectionStrings["OracleContext"].ConnectionString))
+                //get source tablename
+
+                using (SqlConnection conn2 = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
                 {
+                    using (SqlCommand cmd2 = new SqlCommand())
+                    {
+                        cmd2.Connection = conn2;
+                        cmd2.CommandText = "[Application].[dbo].[UPGetTable]";
+                        cmd2.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd2.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
+                        cmd2.Parameters.Add("@tableName", System.Data.SqlDbType.VarChar).Value = name;
+
+                        conn2.Open();
+
+                        using (SqlDataReader reader = cmd2.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+
+                                source = reader["target"] != null ? reader["target"].ToString() : "";
+
+                            }
+                        }
+                        conn2.Close();
+                    }
+                }
+
+
+                var newSource = source.Split('.').First();
+                newSource = newSource + '.';
+                var paramSource = source.Replace(newSource, "");
+
+                //get number of rows
+                using (SqlConnection conn1 = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd1 = new SqlCommand())
+                    {
+                        cmd1.Connection = conn1;
+                        cmd1.CommandText = "[Application].[dbo].[UPGetCountRows]";
+                        cmd1.CommandType = System.Data.CommandType.StoredProcedure;
+                        //need table name param
+                        cmd1.Parameters.Add("@tableName", System.Data.SqlDbType.VarChar).Value = paramSource;
+
+                        try
+                        {
+                            conn1.Open();
+                            using (SqlDataReader reader = cmd1.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+
+                                    rows = reader["count"] != null ? reader["count"].ToString() : "";
+
+                                }
+                            }
+
+                            conn1.Close();
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Original Table " + paramSource + " Has " + rows + " rows";
+
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Failed Getting Number of Rows For " + source;
+
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            return false;
+                        }
+                    }
+                }
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
+                    {
+                        
+                        cmd.ExecuteNonQuery();
+                        SqlBulkCopy bulkcopy = new SqlBulkCopy(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString, SqlBulkCopyOptions.KeepIdentity);
+                        bulkcopy.DestinationTableName = ssqltable;
+
+                        /*foreach (DataColumn column in dt.Columns)
+                        {
+                            bulkcopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                        }*/
+
+                        try
+
+                            //get number of rows in orignal table
+                        {
+                            bulkcopy.WriteToServer(dt);
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Succesfully Copied " + tableName + " from " + excelFilePath;
+
+                            
+
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log logRecord2 = new Log();
+                                logRecord2.username = username;
+                                logRecord2.logDate = DateTime.Now;
+                                logRecord2.logText = "Failed Copying " + tableName + " from " + excelFilePath;
+
+                                insertLog(logRecord);
+                            }
+                            
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Error in ImportDataFromExcel " + tableName + " error: " + ex;
+
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            return false;
+                        }
+                        conn.Close();
+                    }
+
+                }
+            }
+            else
+            {
+                //if oracle send in json to SP and loop through dt sending one row at a time
+                foreach (DataRow row in dt.Rows)
+                {
+                    //send row as param to oracle sp
+                    using (OracleConnection conn = new OracleConnection(ConfigurationManager.ConnectionStrings["OracleContext"].ConnectionString))
+                    {
+                        conn.Open();
+                        using (OracleCommand cmd = new OracleCommand(deleteQuery, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                }
+        
+                /*using (OracleConnection conn = new OracleConnection(ConfigurationManager.ConnectionStrings["OracleContext"].ConnectionString))
+                {
+                    conn.Open();
+                    using (OracleCommand cmd = new OracleCommand(deleteQuery, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
                     using (OracleBulkCopy oBulkCopy = new OracleBulkCopy(conn))
                     {
-
 
                         oBulkCopy.DestinationTableName = ssqltable;
 
                         try
                         {
                             oBulkCopy.WriteToServer(dt);
+                            oBulkCopy.Close();
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Copied " + tableName + " from " + excelFilePath;
+
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
                         }
                         catch (Exception ex)
                         {
                             log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                        }
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Error in GetTableFromName " + tableName + " error: " + ex;
 
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+                        conn.Close();
 
                     }
-                }
-            }
-            else
-            {
-                
-                SqlCommand cmd = new SqlCommand();
+                }*/
 
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
-                {
-                    using (cmd)
-                    {
-
-                        SqlBulkCopy bulkcopy = new SqlBulkCopy(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString);
-                        bulkcopy.DestinationTableName = ssqltable;
-
-                        try
-                        {
-                            bulkcopy.WriteToServer(dt);
-                        }
-                        catch (Exception ex)
-                        {
-                            log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                        }
-
-
-                    }
-                }
-            }
+            return true;
                      
         }
 
@@ -800,6 +809,68 @@ namespace QuotaAPI.Controllers
                 //handle exception   
             }
         }
+        public bool IsSQLTable(string username, string tableName)
+        {
+
+            //int split = tableName.LastIndexOf('.', +1);
+            //string newTable = tableName.Substring(split);
+            string newTable = tableName.Split('.').Last();
+            Table t = new Table();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPGetTable]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
+                        cmd.Parameters.Add("@tableName", System.Data.SqlDbType.VarChar).Value = newTable;
+
+                        conn.Open();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                t.type = reader["type"] != null ? reader["type"].ToString() : "";
+
+                            }
+                        }
+                        if (t.type == "SQL")
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+           
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Error in IsSQLTable " + tableName + " error: " + ex;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception)
+                {
+                }
+                return false;
+            } 
+
+
+        }
 
         [HttpPost]
         public IHttpActionResult InsertImportTable(string username, string tableName)
@@ -808,137 +879,100 @@ namespace QuotaAPI.Controllers
             var filePath = HttpContext.Current.Server.MapPath("~/ImportTemplates/");
             var excelFile = filePath + filename;
 
-            FileInfo fi = new FileInfo(excelFile);
-            try
+            bool success = false;
+
+            List<Table> userAccessTables = new List<Table>();
+
+            userAccessTables = ValidateTable(username);
+
+            bool exists = false;
+
+            foreach (var item in userAccessTables)
             {
-                ImportDataFromExcel(excelFile, tableName);
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex); 
+                if(item.source == tableName){
+                    exists = true;
+                }
             }
 
+            if (exists)
+            {
 
-            return Ok(excelFile);
+                FileInfo fi = new FileInfo(excelFile);
+                try
+                {
+                    success = ImportDataFromExcel(excelFile, tableName, username);
+                }
+                catch (Exception ex)
+                {
+                    Log logRecord = new Log();
+                    logRecord.username = username;
+                    logRecord.logDate = DateTime.Now;
+                    logRecord.logText = "Error in InsertImportTable " + tableName + " error: " + ex;
+
+                    try
+                    {
+                        insertLog(logRecord);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    return InternalServerError(ex);
+                }
+
+                if (success == true)
+                {
+                    return Ok(excelFile);
+                }
+                else
+                {
+                    return InternalServerError();
+                }
+            }
+            else
+            {
+
+                return Ok();
+            }
+
         }
-
-
         [HttpPost]
-        public IHttpActionResult InsertUploads(string username)
+        public HttpResponseMessage PostExcel()
         {
-            var filename = username + ".xlsx";
-            var filePath = HttpContext.Current.Server.MapPath("~/ImportTemplates/");
-            var excelFile = filePath + filename;
-            DataSet dsQuotas = new DataSet();
-            FileInfo fi = new FileInfo(excelFile);
-            List<User> quotas = new List<User>();
-
-            using (ExcelPackage xlPackage = new ExcelPackage(fi))
+            var httpRequest = HttpContext.Current.Request;
+            if (httpRequest.Files.Count < 1)
             {
-                ExcelWorksheet worksheet = xlPackage.Workbook.Worksheets[1];
-                ExcelCellAddress startCell = worksheet.Dimension.Start;
-                ExcelCellAddress endCell = worksheet.Dimension.End;
-                for (int row = startCell.Row + 1; row <= endCell.Row; row++)
-                {
-                    if (worksheet.Cells[row, 1].Value == null)
-                    {
-                        break;
-                    }
-
-                    /*Template newQuota = new Template()
-                    {
-                        parentDesc = worksheet.Cells[row, 1] != null ? worksheet.Cells[row, 1].Value.ToString() : "",
-                        parentId = worksheet.Cells[row, 2] != null ? worksheet.Cells[row, 2].Value.ToString() : "",
-                        territoryDesc = worksheet.Cells[row, 3] != null ? worksheet.Cells[row, 3].Value.ToString() : "",
-                        territoryId = worksheet.Cells[row, 4] != null ? worksheet.Cells[row, 4].Value.ToString() : "",
-                        quotaDate = worksheet.Cells[row, 5] != null ? worksheet.Cells[row, 5].Value.ToString() : "",
-                        capital = worksheet.Cells[row, 6] != null ? worksheet.Cells[row, 6].Value.ToString() : "0.00",
-                        disposable = worksheet.Cells[row, 7] != null ? worksheet.Cells[row, 7].Value.ToString() : "0.00",
-                        tissue = worksheet.Cells[row, 8] != null ? worksheet.Cells[row, 8].Value.ToString() : "0.00",
-
-                    };*/
-                    User newQuota = new User()
-                    {
-                        parentDesc = worksheet.Cells[row, 1].Value.ToString(),
-                        parentId = worksheet.Cells[row, 2].Value.ToString(),
-                        territoryDesc = worksheet.Cells[row, 3].Value.ToString(),
-                        territoryId = worksheet.Cells[row, 4].Value.ToString(),
-                        quotaDate = worksheet.Cells[row, 5].Value.ToString(),
-                        capital = Convert.ToString(worksheet.Cells[row, 6].Value),
-                        disposable = Convert.ToString(worksheet.Cells[row, 7].Value),
-                        tissue = Convert.ToString(worksheet.Cells[row, 8].Value),
-
-                    };
-                    if (newQuota.capital == "" || newQuota.capital == null)
-                    {
-                        newQuota.capital = "0.00";
-                    }
-                    if (newQuota.tissue == "" || newQuota.tissue == null)
-                    {
-                        newQuota.tissue = "0.00";
-                    }
-                    if (newQuota.disposable == "" || newQuota.disposable == null)
-                    {
-                        newQuota.disposable = "0.00";
-                    }
-                    quotas.Add(newQuota);
-                }
+                return Request.CreateResponse(HttpStatusCode.BadRequest);
+            }
+            var filename = "SBROWN" + ".xlsx";
+            var Path = HttpContext.Current.Server.MapPath("~/ImportTemplates/");
+            if (File.Exists(Path + filename))
+            {
+                File.Delete(Path + filename);
             }
 
-            ClearUploads(username);
-            try
+            foreach (string file in httpRequest.Files)
             {
-                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
-                {
-                    using (SqlCommand cmd = new SqlCommand())
-                    {
-                        foreach (var quota in quotas)
-                        {
-                            cmd.Parameters.Clear();
-
-
-                            DateTime date = new DateTime();
-                            date = Convert.ToDateTime(quota.quotaDate);
-
-                            cmd.Connection = conn;
-                            cmd.CommandText = "[Application].[dbo].[QMInsertUploads]";
-                            cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                            cmd.Parameters.Add("@parentId", System.Data.SqlDbType.VarChar).Value = quota.parentId;
-                            cmd.Parameters.Add("@parentDesc", System.Data.SqlDbType.VarChar).Value = quota.parentDesc;
-                            cmd.Parameters.Add("@territoryId", System.Data.SqlDbType.VarChar).Value = quota.territoryId;
-                            cmd.Parameters.Add("@territoryDesc", System.Data.SqlDbType.VarChar).Value = quota.territoryDesc;
-                            cmd.Parameters.Add("@date", System.Data.SqlDbType.Date).Value = date;
-                            cmd.Parameters.Add("@capitalQuota", System.Data.SqlDbType.Money).Value = quota.capital;
-                            cmd.Parameters.Add("@disposableQuota", System.Data.SqlDbType.Money).Value = quota.disposable;
-                            cmd.Parameters.Add("@tissueQuota", System.Data.SqlDbType.Money).Value = quota.tissue;
-                            cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
-
-                            try
-                            {
-                                conn.Open();
-                                var rows = cmd.ExecuteNonQuery();
-                                conn.Close();
-
-                            }
-                            catch (Exception ex)
-                            {
-                                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                                return InternalServerError(ex);
-                            }
-
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
-                return InternalServerError(ex);
+                var postedFile = httpRequest.Files[file];
+                var filePath = HttpContext.Current.Server.MapPath("~/" + postedFile.FileName);
+                postedFile.SaveAs(filePath);
+                // NOTE: To store in memory use postedFile.InputStream
             }
 
-            return Ok();
+            return Request.CreateResponse(HttpStatusCode.Created);
         }
+        [HttpPost]
+        public HttpResponseMessage Postx()
+        {
+            var Path = HttpContext.Current.Server.MapPath("~/ImportTemplates/");
+            var request = HttpContext.Current.Request;
+            var filePath = Path + request.Headers["filename"];
+            using (var fs = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+            {
+                request.InputStream.CopyTo(fs);
+            }
 
+            return Request.CreateResponse(HttpStatusCode.Created);
+        }
         
         [HttpPost]
         public HttpResponseMessage PostFile(string username)
@@ -976,6 +1010,18 @@ namespace QuotaAPI.Controllers
 
 
                     docfiles.Add(filePath);
+                    Log logRecord = new Log();
+                    logRecord.username = username;
+                    logRecord.logDate = DateTime.Now;
+                    logRecord.logText = "Posted File " + filePath;
+
+                    try
+                    {
+                        insertLog(logRecord);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
 
                 }
 
@@ -993,6 +1039,71 @@ namespace QuotaAPI.Controllers
             return result;
 
         }
+
+
+        public List<Table> ValidateTable(string username)
+        {
+
+            List<Table> tables = new List<Table>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPGetTablesById]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
+
+                        conn.Open();
+                        var source = "";
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Table t = new Table();
+
+                                t.id = reader["id"] != null ? reader["id"].ToString() : "";
+                                t.name = reader["name"] != null ? reader["name"].ToString() : "";
+                                t.description = reader["description"] != null ? reader["description"].ToString() : "";
+                                t.type = reader["type"] != null ? reader["type"].ToString() : "";
+                                if (reader["source"].ToString().Length > 0)
+                                {
+                                    var a = reader["source"] != null ? reader["source"].ToString() : "";
+                                    source = a.Substring(a.IndexOf('.') + 1);
+                                }
+
+                                t.source = source;
+                                tables.Add(t);
+
+                            }
+                        }
+                        return tables;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Error in ValidateTable " + " error: " + ex;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception)
+                {
+                }
+                return new List<Table>();
+            }
+
+        }
+
 
     } // class
 } // package

@@ -85,7 +85,7 @@
     </Reference>
     <Reference Include="Oracle.DataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Desktop\Oracle.DataAccess.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Desktop\Oracle.DataAccess.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Net.Http" />
@@ -152,6 +152,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="LogExtensions.cs" />
+    <Compile Include="Models\Log.cs" />
     <Compile Include="Models\Table.cs" />
     <Compile Include="App_Data\RankingBubbleRec.cs" />
     <Compile Include="Models\User.cs" />

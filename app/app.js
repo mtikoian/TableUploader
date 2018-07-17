@@ -1,7 +1,7 @@
 ﻿(function() {
 	'use strict'
 	
-	angular.module('app', ['ngRoute', 'ngCookies', 'ngAnimate', 'kendo.directives', 'ui.bootstrap', 'daterangepicker'])
+    angular.module('app', ['ngRoute', 'ngCookies', 'ngAnimate', 'kendo.directives', 'ui.bootstrap'])
 		.config(config)
 		.factory('SharedSvc', SharedSvc)
 		.service('AppSvc', AppSvc)
@@ -234,8 +234,8 @@
 		//this.apiPathCube = "https://w4.linvatec.com/WebServices/InsightDevCubeAPI";
 		
 	    //this.exportFilePath = "https://insightqa.conmed.com/ExportFiles/";
-	    //this.exportFilePath = "https://w4dev.linvatec.com/quota/ExportTemplates/";
-	    this.exportFilePath = "https://w4dev.linvatec.com/tableuploader/ExportTemplates/";
+	    this.exportFilePath = "https://webtools.conmed.com/tableuploader/ExportTemplates/";
+	    //this.exportFilePath = "https://w4dev.linvatec.com/tableuploader/ExportTemplates/";
 	
 		this.getShortMonthName = function(month) {
 			var shortMonth = "";
@@ -384,15 +384,16 @@
 	run.$inject = ['$rootScope', '$location', '$cookieStore', '$http'];
 	function run($rootScope, $location, $cookieStore, $http) {
 		// keep user logged in after page refresh
-		$rootScope.globals = $cookieStore.get('globals') || {};
-		if ($rootScope.globals.currentUser) {
-			//$http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata; // jshint ignore:line
-			$http.defaults.headers.common['Authorization'] = $rootScope.globals.currentUser.authdata; // jshint ignore:line
-		}
+		
 		
 		$rootScope.$on('$locationChangeStart', function (event, next, current) {
 			// redirect to login page if not logged in
-			if ($location.path() !== '/' && !$rootScope.globals.currentUser) {
+		    if ($location.path() !== '/' && !$rootScope.globals.currentUser) {
+		        $rootScope.globals = $cookieStore.get('globals') || {};
+		        if ($rootScope.globals.currentUser) {
+		            //$http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata; // jshint ignore:line
+		            $http.defaults.headers.common['Authorization'] = $rootScope.globals.currentUser.authdata; // jshint ignore:line
+		        }
 				$location.path('/');
 			}
 		});

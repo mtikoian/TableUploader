@@ -8,7 +8,6 @@
 
 	    $("#downloadTablesBtn").kendoButton();
 	    $("#uploadTablesBtn").kendoButton();
-
 	    var downloadButton = $("#downloadTablesBtn").data("kendoButton");
 	    downloadButton.enable(false);
 	    var uploadButton = $("#uploadTablesBtn").data("kendoButton");
@@ -77,6 +76,7 @@
                       template: "<b>#= name #</b><br> #= description #", title: "<b>Table</b>"
 
                   },
+                  { field: "type", title: "Type", editable: false, hidden: true },
                   { field: "source", title: "Source", editable: false},
 
 	            ],
@@ -96,18 +96,33 @@
 	    var windowHeight = $window.innerHeight;
 	    var divHeight = windowHeight * .75;
 
+	    function onUpload(e) {
+	        var xhr = e.XMLHttpRequest;
+	        if (xhr) {
+	            xhr.addEventListener("readystatechange", function (e) {
+	                if (xhr.readyState == 1 /* OPENED */) {
+	                    xhr.setRequestHeader('Authorization', $http.defaults.headers.common.Authorization);
+	                }
+	            });
+	        }
+	    }
+
+	    var username = $rootScope.globals.currentUser.username;
+
 	    $("#files").kendoUpload({
 	        async: {
 	            autoUpload: true,
-	            saveUrl: "services/UPLOADERAPI/api/upload/postfile?username=" + $rootScope.globals.currentUser.username
+	            saveUrl: "services/UPLOADERAPI/api/upload/postfile?username=" + username
+	            
 	        },
+	        upload: onUpload,
 	        validation: {
 	            allowedExtensions: [".xlsx"],
 	        },
-	        multiple: false,
 	        success: insertNewTable
 	    });
 
+	        
 	    $("#editWindow").hide();
 	    $("#loadWindow").hide();
 	    $("#submitTableBtn").hide();
@@ -140,14 +155,17 @@
 
 	    };
 
-	    function insertNewTable() {
-
+	    function insertNewTable(e) {
+	        
+	        kendo.ui.progress($("#loadWindow"), true);
 	        $http.post('services/UPLOADERAPI/api/upload/InsertImportTable?username=' + $rootScope.globals.currentUser.username + '&tableName=' + $scope.selectedTable)
 		    	.success(function (d) {
+		    	    $(".k-widget.k-upload").find("ul").remove();
 		    	    $(".k-window-content").each(function () {
 		    	        $(this).data("kendoWindow").close();
 		    	    })
 		    	.error(function () {
+		    	    $(".k-widget.k-upload").find("ul").remove();
 		    	    $(".k-window-content").each(function () {
 		    	        $(this).data("kendoWindow").close();
 		    	    })
@@ -156,6 +174,7 @@
 		    	});
 
 		    	});
+	        kendo.ui.progress($("#loadWindow"), false);
 	    }
 
 
@@ -176,10 +195,10 @@
                     
                     var uploadBtn = $("#uploadTablesBtn").data("kendoButton");
                     uploadBtn.enable(true);
-                    kendo.ui.progress($("#mainDivContent"), false);
+                    
                 });
 	        }
-
+	        kendo.ui.progress($("#mainDivContent"), false);
 	    };
 
 	    $scope.uploadQuotaTemplate = function () {
