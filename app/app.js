@@ -44,6 +44,11 @@
                     }
                 }
             })
+            .when('/processes', {
+                templateUrl: function () {
+                    return 'app/components/processes/processes.view.html'
+                    }
+            })
 										
 			.otherwise({
 				redirectTo: '/'
@@ -114,7 +119,7 @@
 			searchApplied: false,
 			searchLabel: '',
 			paramData: ''
-		}	
+		}
 		
 		var pageResetToggle = false;
 						
@@ -279,6 +284,8 @@
 			}
 			return shortMonth;
 		}
+
+	    this.urlPath = "/tableuploader/#";
 		
 		this.initGA = function() { 
 			

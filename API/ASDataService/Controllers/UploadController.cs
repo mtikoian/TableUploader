@@ -183,6 +183,9 @@ namespace QuotaAPI.Controllers
 
         }
 
+      
+
+
         /*************************************************************************************************
 
              Method:         Get Quota For Id
@@ -253,6 +256,358 @@ namespace QuotaAPI.Controllers
                 logRecord.username = username;
                 logRecord.logDate = DateTime.Now;
                 logRecord.logText = "Error in GetTablesByUser " + " error: " + ex;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception)
+                {
+                }
+                return InternalServerError(ex);
+            }
+
+        }
+        [HttpGet]
+        public IHttpActionResult GetProcessStatus(string username, string tableName)
+        {
+            if (tableName == null)
+            {
+                return BadRequest("Invalid or missing json request");
+            }
+            Process p = new Process();
+
+            var name = tableName.Split('.').Last();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPGetJobStatus]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@tableName", System.Data.SqlDbType.VarChar).Value = name;
+
+                        conn.Open();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+
+                                p.id = reader["id"] != null ? reader["id"].ToString() : "";
+                                p.isRunning = reader["isRunning"] != null ? reader["isRunning"].ToString() : "";
+
+                            }
+                        }
+                        return Ok(p);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Error in GetProcessesByTable " + " error: " + ex;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception)
+                {
+                }
+                return InternalServerError(ex);
+            }
+
+        }
+        [HttpGet]
+        public IHttpActionResult GetProcess(string username, string tableName)
+        {
+            if (tableName == null)
+            {
+                return BadRequest("Invalid or missing json request");
+            }
+            Process p = new Process();
+
+            var name = tableName.Split('.').Last();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPGetProcessesByTable]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@tableName", System.Data.SqlDbType.VarChar).Value = name;
+
+                        conn.Open();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                
+                                p.id = reader["id"] != null ? reader["id"].ToString() : "";
+                                p.tableName = reader["tableName"] != null ? reader["tableName"].ToString() : "";
+                                p.jobName = reader["jobName"] != null ? reader["jobName"].ToString() : "";
+                                p.description = reader["description"] != null ? reader["description"].ToString() : "";
+                                p.type = reader["type"] != null ? reader["type"].ToString() : "";
+                                p.isRunning = reader["isRunning"] != null ? reader["isRunning"].ToString() : "";
+
+                            }
+                        }
+                        return Ok(p);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Error in GetProcessesByTable " + " error: " + ex;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception)
+                {
+                }
+                return InternalServerError(ex);
+            }
+
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetProcessById(string username, string id)
+        {
+            if (id == null)
+            {
+                return BadRequest("Invalid or missing json request");
+            }
+            Process p = new Process();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPGetProcessById]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@id", System.Data.SqlDbType.VarChar).Value = id;
+
+                        conn.Open();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+
+                                p.id = reader["id"] != null ? reader["id"].ToString() : "";
+                                p.tableName = reader["tableName"] != null ? reader["tableName"].ToString() : "";
+                                p.jobName = reader["jobName"] != null ? reader["jobName"].ToString() : "";
+                                p.description = reader["description"] != null ? reader["description"].ToString() : "";
+                                p.type = reader["type"] != null ? reader["type"].ToString() : "";
+                                p.isRunning = reader["isRunning"] != null ? reader["isRunning"].ToString() : "";
+
+                            }
+                        }
+                        return Ok(p);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Error in GetProcessesByTable " + " error: " + ex;
+
+                try
+                {
+                    insertLog(logRecord);
+                }
+                catch (Exception)
+                {
+                }
+                return InternalServerError(ex);
+            }
+
+        }
+
+        [HttpPost]
+        public IHttpActionResult RunProcess(string username, string id)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPSetProcessToRunNew]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@id", System.Data.SqlDbType.VarChar).Value = id;
+                        try
+                        {
+                            conn.Open();
+                            cmd.ExecuteNonQuery();
+
+                            conn.Close();
+
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Set Process To Run " + " process: " + id;
+
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return Ok();
+        }
+
+        //call after data transfer to table or from a table of processes when a user selects
+
+        public void UpdateProcessToRun(string username, string tableName)
+        {
+            var name = tableName.Split('.').Last().ToUpper();
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPSetProcessToRun]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@tableName", System.Data.SqlDbType.VarChar).Value = name;
+                        try
+                        {
+                            conn.Open();
+                            cmd.ExecuteNonQuery();
+
+                            conn.Close();
+
+                            Log logRecord = new Log();
+                            logRecord.username = username;
+                            logRecord.logDate = DateTime.Now;
+                            logRecord.logText = "Set Process To Run " + " process: " + name;
+
+                            try
+                            {
+                                insertLog(logRecord);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetProcessesByUser(string username)
+        {
+            if (username == null)
+            {
+                return BadRequest("Invalid or missing json request");
+            }
+
+
+            List<Process> processes = new List<Process>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["SQLContext"].ConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = conn;
+                        cmd.CommandText = "[Application].[dbo].[UPGetProcessesById]";
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.Parameters.Add("@username", System.Data.SqlDbType.VarChar).Value = username;
+
+                        conn.Open();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Process p = new Process();
+
+                                p.id = reader["id"] != null ? reader["id"].ToString() : "";
+                                p.tableName = reader["tableName"] != null ? reader["tableName"].ToString() : "";
+                                p.jobName = reader["jobName"] != null ? reader["jobName"].ToString() : "";
+                                p.description = reader["description"] != null ? reader["description"].ToString() : "";
+                                p.type = reader["type"] != null ? reader["type"].ToString() : "";
+                                var status = reader["isRunning"] != null ? reader["isRunning"].ToString() : "";
+
+                                if (status == "0")
+                                {
+                                    p.isRunning = "Scheduled";
+                                }
+                                if (status == "1")
+                                {
+                                    p.isRunning = "Running";
+                                }
+                                if (status == "2")
+                                {
+                                    p.isRunning = "Completed";
+                                }
+
+                                processes.Add(p);
+
+                            }
+                        }
+                        return Ok(processes);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
+                Log logRecord = new Log();
+                logRecord.username = username;
+                logRecord.logDate = DateTime.Now;
+                logRecord.logText = "Error in GetProcessesByUser " + " error: " + ex;
 
                 try
                 {
@@ -624,6 +979,7 @@ namespace QuotaAPI.Controllers
                             //get number of rows in orignal table
                         {
                             bulkcopy.WriteToServer(dt);
+   
                             Log logRecord = new Log();
                             logRecord.username = username;
                             logRecord.logDate = DateTime.Now;
@@ -646,6 +1002,8 @@ namespace QuotaAPI.Controllers
                             }
                             
                         }
+                     
+
                         catch (Exception ex)
                         {
                             log.Error("*** ERROR: " + this.GetType().Name + "." + System.Reflection.MethodBase.GetCurrentMethod().Name + ": " + ex.Message);
@@ -1005,21 +1363,38 @@ namespace QuotaAPI.Controllers
                     var filePath = HttpContext.Current.Server.MapPath("~/ImportTemplates/" + username + ".xlsx");
 
                     //var filePath = Path + filename;
-
-                    postedFile.SaveAs(filePath);
+                    try
+                    {
+                        postedFile.SaveAs(filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log logRecord = new Log();
+                        logRecord.username = username;
+                        logRecord.logDate = DateTime.Now;
+                        logRecord.logText = "Error Posting File " + filePath + " Error " + ex;
+                        try
+                        {
+                            insertLog(logRecord);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                    
 
 
                     docfiles.Add(filePath);
-                    Log logRecord = new Log();
-                    logRecord.username = username;
-                    logRecord.logDate = DateTime.Now;
-                    logRecord.logText = "Posted File " + filePath;
+                    Log logRecord1 = new Log();
+                    logRecord1.username = username;
+                    logRecord1.logDate = DateTime.Now;
+                    logRecord1.logText = "Posted File " + filePath;
 
                     try
                     {
-                        insertLog(logRecord);
+                        insertLog(logRecord1);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
 

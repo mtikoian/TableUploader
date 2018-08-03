@@ -2,12 +2,16 @@
 
 
 <div id="mainDivContent" class="container-fluid content-area" ng-controller="TablesCtrl">
-
+    <div class="toolbar">
+            <div id="upToolbar"></div>
+            
+        </div>
+    <br /><br />
 		<div class="col-xs-12">
-			<h2 class="h2-header">Database Tables</h2>
+			<h2 class="h2-header">Database Table</h2>
   
-            <button id="downloadTablesBtn" ng-click="downloadTable()" runat="server" class="k-button"><i class="fa fa-download fa-2x"> Download Table </i></button>
-            <button id="uploadTablesBtn" ng-click="uploadTable()" runat="server" class="k-button"><i class="fa fa-upload fa-2x"> Upload Table </i></button><br />
+            <button id="downloadTablesBtn" ng-click="downloadTable()" runat="server" class="k-button"><i class="fa fa-download fa-2x"> Download</i></button>
+            <button id="uploadTablesBtn" ng-click="uploadTable()" runat="server" class="k-button"><i class="fa fa-upload fa-2x"> Upload</i></button><br />
             
             <div id="tableGrid">
                 

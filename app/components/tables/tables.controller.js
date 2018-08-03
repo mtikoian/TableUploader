@@ -14,7 +14,10 @@
 	    uploadButton.enable(false);
 	    //$("#downloadQuotasBtn").hide();
 	    //$("#uploadQuotasBtn").hide();
+	    $(document).ready(function () {
+	        buildToolbar();
 
+	    });
 	    toastr.options = {
 	        "closeButton": true,
 	        "debug": false,
@@ -33,7 +36,33 @@
 	        "hideMethod": "fadeOut"
 	    }
 
+	    function buildToolbar() {
+	        $("#upToolbar").kendoToolBar({
+	            resizable: false,
+	            items: [
+                    {
+                        type: "buttonGroup",
+                        buttons: [
+                            {
+                                icon: "excel", text: "Tables", id: "uploadBtn", click: function (e) {
+                                    window.location.href = AppSvc.urlPath + "tables";
+                                }
+                            },
+                            {
+                                icon: "gears", text: "Processes", id: "processesBtn", click: function (e) {
+                                    window.location.href = AppSvc.urlPath + "processes";
+                                }
+                            },
+
+                        ]
+                    }
+	            ]
+	        });
+	    };
+
 	    function onChange(e) {
+	        var uploadButton = $("#uploadTablesBtn").data("kendoButton");
+	        uploadButton.enable(false);
 	        var rows = e.sender.select();
 	        rows.each(function (e) {
 	            var grid = $("#tableGrid").data("kendoGrid");
@@ -145,12 +174,23 @@
 	        //loadTableDetails();
 	        var downloadButton = $("#downloadTablesBtn").data("kendoButton");
 	        downloadButton.enable(true);
-	        var uploadButton = $("#uploadTablesBtn").data("kendoButton");
-	        uploadButton.enable(true);
+	        //check to make sure job isRunning status is 2 before enabling
+	        $http.get('services/UPLOADERAPI/api/upload/GetProcessStatus?username=' + $rootScope.globals.currentUser.username + '&tableName=' + $scope.selectedTable)
+		    	.success(function (d) {
+		    	    if (d.isRunning == "2" || d.isRunning == "" || d.isRunning == null) {
+		    	        var uploadButton = $("#uploadTablesBtn").data("kendoButton");
+		    	        uploadButton.enable(true);
+		    	    }
+		    	    if (d.isRunning == "0" || d.isRunning == "1") {
+		    	        var uploadButton = $("#uploadTablesBtn").data("kendoButton");
+		    	        uploadButton.enable(false);
+		    	    }
+
+		    	});
+	        
 	    };
 
 	    $scope.uploadTable= function () {
-	        //alert("This function has not yet been implemented");
 	        openLoadForm();
 
 	    };
@@ -162,6 +202,8 @@
 		    	.success(function (d) {
 		    	    $(".k-widget.k-upload").find("ul").remove();
 		    	    $(".k-window-content").each(function () {
+		    	        var uploadButton = $("#uploadTablesBtn").data("kendoButton");
+		    	        uploadButton.enable(false);
 		    	        $(this).data("kendoWindow").close();
 		    	    })
 		    	.error(function () {

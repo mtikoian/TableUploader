@@ -12,9 +12,29 @@
 	margin-right:0px !important;
 }
 
+.fa-2x {
+    font-size: 1.5em;
+}
 #orderLineItemGridObj .k-grid-header th.k-header>.k-link{
 	padding-right: 0px !important;
 	text-align:left !important;
+}
+.toolbar {
+    background-color: #00A1d9 !important;
+    height: 50px;
+}
+.k-toolbar {
+    margin-top: 5px;
+    background-color: #00A1d9 !important;
+    height: 50px;
+
+}
+.k-button {
+    padding: 8px 8px 8px;
+    width: 150px;
+    height:38px;
+    vertical-align: middle;
+    text-align: center;
 }
 
 .k-header>.k-grid-filter, .k-header>.k-header-column-menu{
