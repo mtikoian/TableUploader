@@ -85,7 +85,7 @@
     </Reference>
     <Reference Include="Oracle.DataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Desktop\Oracle.DataAccess.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Desktop\ODAC112040Xcopy_64bit\odp.net4\odp.net\bin\4\Oracle.DataAccess.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Net.Http" />
